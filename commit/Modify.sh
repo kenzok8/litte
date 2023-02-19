@@ -9,10 +9,8 @@ sed -i \
 
 sed -i 's/luci-lib-ipkg/luci-base/g' luci-app-store/Makefile
 sed -i 's?include \.\./\.\./\(lang\|devel\)?include $(TOPDIR)/feeds/packages/\1?' brook/Makefile
-sed -i 's/"nas"/"services"/g' luci-app-fileassistant/luasrc/controller/fileassistant.lua
-sed -i 's/"NAS"/"Services"/g' luci-app-fileassistant/luasrc/controller/fileassistant.lua
-sed -i 's/nas/services/g' luci-app-fileassistant/htdocs/luci-static/resources/fileassistant/fb.js
-sed -i 's/NAS/Services/g' luci-app-fileassistant/htdocs/luci-static/resources/fileassistant/fb.js
+sed -i -e 's/nas/system/g' -e 's/NAS/System/g' $(grep -rl 'nas\|NAS' luci-app-fileassistant)
+sed -i 's/pkg_web_version:=.*/pkg_web_version:=$pkg_version/' alist/Makefile
 
 bash diy/create_acl_for_luci.sh -a >/dev/null 2>&1
 bash diy/convert_translation.sh -a >/dev/null 2>&1
