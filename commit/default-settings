@@ -46,17 +46,18 @@ sed -i '/option disabled/d' /etc/config/wireless
 sed -i '/set wireless.radio${devidx}.disabled/d' /lib/wifi/mac80211.sh
 
 sed -i '/DISTRIB_REVISION/d' /etc/openwrt_release
-echo "DISTRIB_REVISION='v$(date +%Y.%m.%d)'" >> /etc/openwrt_release
+echo "DISTRIB_REVISION='v$(date +'%Y.%m.%d')'" >> /etc/openwrt_release
 sed -i '/DISTRIB_RELEASE/d' /etc/openwrt_release
-echo "DISTRIB_RELEASE='v$(date +%Y.%m.%d)'" >> /etc/openwrt_release
+echo "DISTRIB_RELEASE='v$(date +'%Y.%m.%d')'" >> /etc/openwrt_release
 sed -i '/DISTRIB_DESCRIPTION/d' /etc/openwrt_release
 echo "DISTRIB_DESCRIPTION='Openwrt '" >> /etc/openwrt_release
 
 sed -i 's/LuCI Master/kenzo/g' /usr/lib/lua/luci/version.lua
+sed -i 's/LuCI openwrt-21.02 branch/kenzo/g' /usr/lib/lua/luci/version.lua
 sed -i 's/LuCI openwrt-18.06 branch/kenzo/g' /usr/lib/lua/luci/version.lua
 sed -i 's/LuCI openwrt-18.06-k5.4 branch/kenzo/g' /usr/lib/lua/luci/version.lua
 sed -i 's/LuCI 17.01 Lienol/kenzo/g' /usr/lib/lua/luci/version.lua
-sed -i 's/LuCI openwrt-21.02 branch/kenzo/g' /usr/lib/lua/luci/version.lua
+sed -i 's/LuCI OpenWrt 23.05-SNAPSHOT/kenzo/g' /usr/lib/lua/luci/version.lua
 sed -i '/luciversion/d' /usr/lib/lua/luci/version.lua
 echo "luciversion ='$(date +'%m.%d')'" >> /usr/lib/lua/luci/version.lua
 
@@ -64,8 +65,9 @@ sed -i '/log-facility/d' /etc/dnsmasq.conf
 echo "log-facility=/dev/null" >> /etc/dnsmasq.conf
 
 echo 'hsts=0' > /root/.wgetrc
-
 rm -rf /tmp/luci-modulecache/
 rm -f /tmp/luci-indexcache
+
+chmod 0755 /etc/init.d/*
 
 exit 0
