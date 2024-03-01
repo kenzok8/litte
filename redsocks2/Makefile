@@ -1,22 +1,20 @@
 # SPDX-License-Identifier: GPL-3.0-only
 #
-# Copyright (C) 2021 ImmortalWrt.org
+# Copyright (C) 2024 ImmortalWrt.org
 
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=redsocks2
-PKG_VERSION:=0.67
-PKG_RELEASE:=5
+PKG_VERSION:=release-test4
+PKG_RELEASE:=1
 
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/semigodking/redsocks.git
-PKG_SOURCE_DATE:=2020-05-10
-PKG_SOURCE_VERSION:=d94c245ea47859cda5b4b7373308589206b97bdc
-PKG_MIRROR_HASH:=5ca32b2f849af7ebda2cab90bbe286bfd97a69de1a85dac09c8df2fbdd8c947c
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=https://codeload.github.com/semigodking/redsocks/tar.gz/$(PKG_VERSION)?
+PKG_MIRROR_HASH:=1afcb2683b35913dd36877f34ab97f803920d82dff482c0ba79f36ae9049e965
 
 PKG_MAINTAINER:=semigodking <semigodking@gmail.com>
 PKG_LICENSE:=Apache-2.0
-PKG_LICENSE_FILE:=LICENSE
+PKG_LICENSE_FILES:=LICENSE
 
 PKG_BUILD_PARALLEL:=1
 
