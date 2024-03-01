@@ -12,7 +12,7 @@ PKG_VERSION:=test4
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-release-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://codeload.github.com/darkk/redsocks/tar.gz/release-$(PKG_VERSION)?
+PKG_SOURCE_URL:=https://codeload.github.com/semigodking/redsocks/tar.gz/release-$(PKG_VERSION)?
 PKG_HASH:=1afcb2683b35913dd36877f34ab97f803920d82dff482c0ba79f36ae9049e965
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-release-$(PKG_VERSION)
 
