@@ -30,7 +30,7 @@
 
 
 ##### 插件每日更新下载:
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/kenzok8/small?style=for-the-badge&label=插件下载)](https://github.com/kenzok8/small/releases/latest)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/kenzok8/small?style=for-the-badge&label=插件下载)](https://github.com/kenzok8/litte/releases/latest)
 
 + [ssr+passwall依赖仓库](https://github.com/kenzok8/small)
 
