@@ -1,21 +1,21 @@
 ![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=kenzok8&show_icons=true&theme=radical)
 <div align="center">
 <h1 align="center"openwrt-packages</h1>
-<img src="https://img.shields.io/github/issues/kenzok8/openwrt-packages?color=green">
-<img src="https://img.shields.io/github/stars/kenzok8/openwrt-packages?color=yellow">
-<img src="https://img.shields.io/github/forks/kenzok8/openwrt-packages?color=orange">
-<img src="https://img.shields.io/github/languages/code-size/kenzok8/openwrt-packages?color=blueviolet">
+<img src="https://img.shields.io/github/issues/kenzok8/litte?color=green">
+<img src="https://img.shields.io/github/stars/kenzok8/litte?color=yellow">
+<img src="https://img.shields.io/github/forks/kenzok8/litte?color=orange">
+<img src="https://img.shields.io/github/languages/code-size/kenzok8/litte?color=blueviolet">
 </div>
 
 <img src="https://v2.jinrishici.com/one.svg?font-size=24&spacing=2&color=Black">
 
 
-* 把openwrt-packages与small仓库重新归类，ssr、passwall、vssr以及依赖合并small
+* 此仓库是合并openwrt-packages与small仓库
 
 #### 使用方式
-```yaml
+```yamllitte
 
-默认ssr与passwall的插件与依赖整合包
+默认ssr与passwall的插件与依赖整合包与少量插件
 
 使用方法：将整合包上传到openwrt设备的tmp目录，输入命令 opkg install *.ipk
 
@@ -30,7 +30,7 @@
 
 
 ##### 插件每日更新下载:
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/kenzok8/small?style=for-the-badge&label=插件下载)](https://github.com/kenzok8/litte/releases/latest)
+[![GitHub release (latest by date)](https://img.shields.io/github/release/kenzok8/litte?style=for-the-badge&label=插件下载)](https://github.com/kenzok8/litte/releases/latest)
 
 + [ssr+passwall依赖仓库](https://github.com/kenzok8/small)
 
@@ -39,10 +39,9 @@
 #### 使用
 一键命令
 ```yaml
-sed -i '$a src-git kenzo https://github.com/kenzok8/openwrt-packages' feeds.conf.default
-sed -i '$a src-git small https://github.com/kenzok8/small' feeds.conf.default
-git pull
-./scripts/feeds update -a
-./scripts/feeds install -a
+echo >> feeds.conf.default
+echo 'src-git litte https://github.com/kenzok8/litte.git;master' >> feeds.conf.default
+./scripts/feeds update litte
+./scripts/feeds install -a -p litte
 make menuconfig
 ```
