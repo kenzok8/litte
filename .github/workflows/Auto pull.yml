@@ -1,0 +1,33 @@
+name: Sync with wall repo
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *' # Runs every day at 00:00
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout litte repo
+      uses: actions/checkout@main
+      with:
+        repository: kenzok8/litte
+        ref: master
+        token: ${{ secrets.ACCESS_TOKEN }}
+
+    - name: Add A repo as remote
+      run: git remote add wall https://github.com/kenzok8/wall.git
+
+    - name: Fetch A repo
+      run: git fetch wall
+
+    - name: Get latest commit ID from wall repo
+      run: echo "COMMIT_ID=$(git rev-parse wall/main)" >> $GITHUB_ENV
+
+    - name: Cherry pick the commit to litte repo
+      run: git cherry-pick ${{ env.COMMIT_ID }}
+
+    - name: Push changes to litte repo
+      run: git push
