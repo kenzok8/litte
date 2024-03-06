@@ -27,7 +27,7 @@ jobs:
       run: echo "COMMIT_ID=$(git rev-parse wall/main)" >> $GITHUB_ENV
 
     - name: Cherry pick the commit to litte repo
-      run: 
+      run: |
         git cherry-pick ${{ env.COMMIT_ID }}
         git checkout HEAD .github/workflows README.md .gitignore	
 
