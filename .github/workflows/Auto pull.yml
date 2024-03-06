@@ -17,17 +17,19 @@ jobs:
         ref: master
         token: ${{ secrets.ACCESS_TOKEN }}
 
-    - name: Add A repo as remote
+    - name: Add wall as remote
       run: git remote add wall https://github.com/kenzok8/wall.git
 
-    - name: Fetch A repo
+    - name: Fetch wall
       run: git fetch wall
 
     - name: Get latest commit ID from wall repo
       run: echo "COMMIT_ID=$(git rev-parse wall/main)" >> $GITHUB_ENV
 
     - name: Cherry pick the commit to litte repo
-      run: git cherry-pick ${{ env.COMMIT_ID }}
+      run: 
+        git cherry-pick ${{ env.COMMIT_ID }}
+        git checkout HEAD .github/workflows README.md .gitignore	
 
     - name: Push changes to litte repo
       run: git push
