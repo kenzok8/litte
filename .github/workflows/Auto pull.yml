@@ -28,7 +28,7 @@ jobs:
 
     - name: Cherry pick the commit to litte repo
       run: |
-        git rm .github/workflows/Auto update v2.yml || true
+        git checkout -- .github/workflows/Auto update v2.yml || true
         git cherry-pick -Xtheirs ${{ env.COMMIT_ID }}
         git checkout HEAD .github/workflows README.md .gitignore
 
