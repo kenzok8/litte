@@ -31,7 +31,9 @@ jobs:
         git fetch wall
         git checkout wall/main -- .
         git reset HEAD .github/workflows
+        git stash
         git cherry-pick -Xtheirs ${{ env.COMMIT_ID }}
+        git stash pop
 
     - name: Push changes to litte repo
       run: git push
