@@ -28,7 +28,7 @@ jobs:
 
     - name: Cherry pick the commit to litte repo
       run: |
-        git cherry-pick ${{ env.COMMIT_ID }}
+        git cherry-pick -Xtheirs ${{ env.COMMIT_ID }}
         git checkout HEAD .github/workflows README.md .gitignore	
 
     - name: Push changes to litte repo
