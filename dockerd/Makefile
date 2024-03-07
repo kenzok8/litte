@@ -11,6 +11,7 @@ PKG_RELEASE:=1
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/moby/moby/tar.gz/v${PKG_VERSION}?
 PKG_HASH:=3e39ff7e371c1d52cb86d64adb735e5f2edfe307fdf13e29a537d485a0b678b6
+PKG_GIT_SHORT_COMMIT:=42c8b31 # SHA1 used within the docker executables
 
 PKG_LICENSE:=Apache-2.0
 PKG_LICENSE_FILES:=LICENSE
