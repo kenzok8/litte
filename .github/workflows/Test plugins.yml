@@ -2,7 +2,7 @@ on:
   workflow_dispatch:
     inputs:
       plugins:
-        description: 'luci-app-passwall luci-app-passwall2 luci-app-ssr-plus luci-app-bypass brook hysteria ipt2socks pdnsd-alt redsocks2 shadow-tls trojan tuic-client xray-plugin v2ray-core v2ray-geodata naiveproxy'
+        description: '输入要编译的插件名，用逗号或空格分隔'
         required: true
         default: ''
 
