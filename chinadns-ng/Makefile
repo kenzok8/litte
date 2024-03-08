@@ -42,7 +42,7 @@ endif
 
 PKG_LICENSE:=AGPL-3.0-only
 PKG_LICENSE_FILES:=LICENSE
-PKG_MAINTAINER:=sbwml <admin@cooluc.com>
+PKG_MAINTAINER:=pexcn <i@pexcn.me>
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -64,4 +64,3 @@ define Package/chinadns-ng/install
 endef
 
 $(eval $(call BuildPackage,chinadns-ng))
-
