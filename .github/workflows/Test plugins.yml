@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       plugins:
-        description: '输入要编译的插件名，用逗号或空格分隔'
+        description: '输入要编译的插件名，空格分隔'
         required: true
         default: ''
 
