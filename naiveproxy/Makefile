@@ -10,7 +10,7 @@ PKG_RELEASE:=1
 
 PKG_SOURCE:=naiveproxy-v$(PKG_VERSION)-openwrt-$(ARCH_PACKAGES).tar.xz
 PKG_SOURCE_URL:=https://github.com/klzgrad/naiveproxy/releases/download/v$(PKG_VERSION)/
-PKG_HASH:=skip
+PKG_HASH:=37e670a3e11530b9901531b9e6022e789edccfb6883bd92c67c8dffd722abaff
 
 PKG_LICENSE:=BSD 3-Clause
 PKG_LICENSE_FILES:=LICENSE
