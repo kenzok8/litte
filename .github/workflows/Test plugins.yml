@@ -46,8 +46,8 @@ jobs:
           zip -j ${{ matrix.arch }}-${{ matrix.sdk }}.zip bin/packages/${{ matrix.arch }}/packages_ci/*.ipk
           echo -e "**文件说明** 🙈:\n" >> release.txt
           echo -e "1. 支持编译单个或者多个插件\n" >> release.txt
-          echo -e "2. 手动启动编译: ${{ github.event.inputs.plugins }}\n" >> release.txt
-          echo -e "3. 使用方法：上传到openwrt设备的tmp目录，输入命令 \`opkg install *.ipk\`\n" >> release.txt
+          echo -e "2. 手动启动编译:${{ github.event.inputs.plugins }}\n" >> release.txt
+          echo -e "3. 使用方法:上传到openwrt设备的tmp目录，输入命令 \`opkg install *.ipk\`\n" >> release.txt
           echo -e "4. 如果单独安装ssr与依赖，\`rm -rf {*passwall*,*bypass*}\`\n" >> release.txt
 
       - name: Upload packages
