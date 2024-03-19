@@ -1,20 +1,16 @@
 # SPDX-Identifier-License: GPL-3.0-only
 #
-# Copyright (C) 2021 ImmortalWrt.org
+# Copyright (C) 2024 ImmortalWrt.org
 
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=UnblockNeteaseMusic
-PKG_BASE_VERSION:=0.27.6
+PKG_VERSION:=0.27.6
 PKG_RELEASE:=1
 
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/UnblockNeteaseMusic/server.git
-PKG_SOURCE_DATE:=2024-03-14
-PKG_SOURCE_VERSION:=efd157705254b3502315bbb55348c79e8fda7f02
-PKG_MIRROR_HASH:=d2779566daa0cd057b8b0054f16159c67c41914b653733a8405f1e33eae4f8a1
-
-PKG_VERSION:=$(PKG_BASE_VERSION)-$(PKG_SOURCE_DATE)-$(call version_abbrev,$(PKG_SOURCE_VERSION))
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=https://codeload.github.com/UnblockNeteaseMusic/server/tar.gz/v${PKG_VERSION}?
+PKG_HASH:=951d74e5950a6579922adacb44507e6d8f0fb323363051e73478d26fc1b92fac
 
 PKG_LICENSE:=LGPL-3.0-only
 PKG_LICENSE_FILE:=LICENSE
@@ -29,19 +25,6 @@ define Package/UnblockNeteaseMusic
   URL:=https://github.com/nondanee/UnblockNeteaseMusic
   DEPENDS:=+node
   PKGARCH:=all
-endef
-
-define Build/Prepare
-	mkdir -p $(PKG_BUILD_DIR)
-	xzcat $(DL_DIR)/$(PKG_SOURCE) | $(TAR) -C $(PKG_BUILD_DIR) $(TAR_OPTIONS)
-endef
-
-define Build/Configure
-	echo -e $(PKG_BASE_VERSION) > $(PKG_BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)/core_ver
-	echo -e $(PKG_SOURCE_VERSION) > $(PKG_BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)/local_ver
-endef
-
-define Build/Compile
 endef
 
 define Package/UnblockNeteaseMusic/install
