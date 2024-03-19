@@ -27,6 +27,12 @@ define Package/UnblockNeteaseMusic
   PKGARCH:=all
 endef
 
+define Build/Prepare
+    mkdir -p $(PKG_BUILD_DIR)
+    tar -xzf $(DL_DIR)/$(PKG_SOURCE) -C $(PKG_BUILD_DIR)
+    $(Build/Patch)
+endef
+
 define Package/UnblockNeteaseMusic/install
 	$(INSTALL_DIR) $(1)/usr/share/UnblockNeteaseMusic
 	$(CP) $(PKG_BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)/* $(1)/usr/share/UnblockNeteaseMusic
