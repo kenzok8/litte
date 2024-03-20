@@ -1,10 +1,7 @@
-# SPDX-License-Identifier: GPL-2.0-only
-#
-# Copyright (C) 2023 ImmortalWrt.org
-
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=daed
+PKG_VERSION:=0.3.3.p1
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
