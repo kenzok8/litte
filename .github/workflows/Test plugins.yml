@@ -43,7 +43,7 @@ jobs:
 
       - name: Zip packages
         run: |
-          zip -j ${{ matrix.arch }}-${{ matrix.sdk }}.zip bin/packages/${{ matrix.arch }}/packages_ci/*.ipk
+          tar -zcvf ${{ matrix.arch }}-${{ matrix.sdk }}.tar.gz bin/packages/${{ matrix.arch }}/packages_ci/*.ipk
           echo -e "**文件说明** 🙈:\n" >> release.txt
           echo -e "1. 支持编译单个或者多个插件\n" >> release.txt
           echo -e "2. 手动启动编译:${{ github.event.inputs.plugins }}\n" >> release.txt
@@ -54,7 +54,7 @@ jobs:
         uses: ncipollo/release-action@main
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
-          artifacts: "${{ matrix.arch }}-${{ matrix.sdk }}.zip,bin/packages/${{ matrix.arch }}/packages_ci/*.ipk"
+          artifacts: "${{ matrix.arch }}-${{ matrix.sdk }}.tar.gz,bin/packages/${{ matrix.arch }}/packages_ci/*.ipk"
           allowUpdates: true
           replacesArtifacts: true
           bodyFile: "release.txt"
