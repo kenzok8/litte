@@ -77,7 +77,7 @@ WEB_FILE:=$(PKG_NAME)-web-$(PKG_VERSION).zip
 define Download/daed-web
 	URL:=@IMMORTALWRT
 	FILE:=$(WEB_FILE)
-	HASH:=9f4eefa5899f687365b6c68633d3da54491da035d06bbc47a45fbcc4b5c3e3d2
+	HASH:=5790b86afaf20c11798cf2efcd81747de9fda00da98a504eedb5fde46433165b
 endef
 
 define Build/Prepare
