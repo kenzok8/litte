@@ -34,7 +34,7 @@ define Package/dockerd
   TITLE:=Docker Community Edition Daemon
   URL:=https://www.docker.com/
   DEPENDS:=$(GO_ARCH_DEPENDS) \
-    +ca-bundle \
+    +ca-certificates \
     +containerd \
     +iptables \
     +iptables-mod-extra \
@@ -95,13 +95,13 @@ define Build/Prepare
 	$(Build/Prepare/Default)
 
 	# Verify dependencies are the vendored version
-	$(call EnsureVendoredVersion,../../packages/utils/containerd/Makefile,containerd.installer)
-	$(call EnsureVendoredVersion,../../packages/utils/runc/Makefile,runc.installer)
-	$(call EnsureVendoredVersion,../../packages/utils/tini/Makefile,tini.installer)
+	$(call EnsureVendoredVersion,../containerd/Makefile,containerd.installer)
+	$(call EnsureVendoredVersion,../runc/Makefile,runc.installer)
+	$(call EnsureVendoredVersion,../tini/Makefile,tini.installer)
 
 	# Verify CLI is the same version
 	( \
-		CLI_MAKEFILE="../../packages/utils/docker/Makefile"; \
+		CLI_MAKEFILE="../docker/Makefile"; \
 		CLI_VERSION=$$$$( grep --only-matching --perl-regexp '(?<=PKG_VERSION:=)(.*)' "$$$${CLI_MAKEFILE}" ); \
 		if [ "$$$${CLI_VERSION}" != "$(PKG_VERSION)" ]; then \
 			echo "ERROR: Expected 'PKG_VERSION:=$(PKG_VERSION)' in '$$$${CLI_MAKEFILE}', found 'PKG_VERSION:=$$$${CLI_VERSION}'"; \
