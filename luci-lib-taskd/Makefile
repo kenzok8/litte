@@ -1,8 +1,6 @@
 #
 # Copyright (C) 2022 jjm2473 <jjm2473@gmail.com>
 #
-# This is free software, licensed under the MIT License.
-#
 
 include $(TOPDIR)/rules.mk
 
