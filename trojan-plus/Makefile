@@ -1,4 +1,3 @@
-#
 # Copyright (C) 2018-2019 wongsyrone
 #
 # This is free software, licensed under the GNU General Public License v3.
