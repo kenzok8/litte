@@ -1,5 +1,4 @@
 # Copyright (C) 2017-2018 Jian Chang <aa65535@live.com>
-#
 # Copyright (C) 2021 ImmortalWrt
 # <https://immortalwrt.org>
 #
