@@ -1,9 +1,7 @@
 #
 # Copyright (C) 2015-2016 OpenWrt.org
 # Copyright (C) 2020 jjm2473@gmail.com
-#
 # This is free software, licensed under the GNU General Public License v3.
-#
 
 include $(TOPDIR)/rules.mk
 
