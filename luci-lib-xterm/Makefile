@@ -1,5 +1,7 @@
 #
 # Copyright (c) 2017-2019, The xterm.js authors (MIT License)
+# Copyright (c) 2014-2017, SourceLair, Private Company (www.sourcelair.com) (MIT License)
+# Copyright (c) 2012-2013, Christopher Jeffrey (MIT License)
 #
 # This is free software, licensed under the MIT License.
 #
