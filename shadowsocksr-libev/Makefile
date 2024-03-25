@@ -1,9 +1,3 @@
-# SPDX-License-Identifier: GPL-2.0-only
-#
-# Copyright (C) 2017-2020 Yousong Zhou <yszhou4tech@gmail.com>
-# Copyright (C) 2018 Lean <coolsnowwolf@gmail.com>
-# Copyright (C) 2021 ImmortalWrt.org
-
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=shadowsocksr-libev
