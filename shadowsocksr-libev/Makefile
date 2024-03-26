@@ -63,4 +63,3 @@ endif
 $(foreach component,$(SHADOWSOCKSR_COMPONENTS), \
   $(eval $(call BuildPackage,shadowsocksr-libev-ssr-$(component))) \
 )
-
