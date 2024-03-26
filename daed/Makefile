@@ -1,17 +1,12 @@
-# SPDX-License-Identifier: GPL-2.0-only
-#
-# Copyright (C) 2023 ImmortalWrt.org
-
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=daed
+PKG_VERSION:=0.3.3.p1
 PKG_RELEASE:=1
 
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/daeuniverse/daed.git
-PKG_SOURCE_DATE:=2023-11-03
-PKG_SOURCE_VERSION:=54bc33934d0e323449df11fc26dc9569edbbe13c
-PKG_MIRROR_HASH:=1d4d8b4fd163834acec3d227ef56697d79ffa374309105a9e6b35dcf4aa96b14
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=https://codeload.github.com/daeuniverse/daed/tar.gz/v$(PKG_VERSION)?
+PKG_HASH:=815c29c8e2a89c2eecdc29e31838a1ab0a4a18ea7a93b6f72bf6b8993bc73459
 
 PKG_LICENSE:=AGPL-3.0-only MIT
 PKG_LICENSE_FILES:=LICENSE wing/LICENSE
@@ -76,10 +71,11 @@ define Package/daed/conffiles
 endef
 
 WEB_FILE:=$(PKG_NAME)-web-$(PKG_VERSION).zip
-define Download/daed-web
-	URL:=@IMMORTALWRT
+define Download/$(PKG_NAME)-web
+	URL:=https://github.com/daeuniverse/daed/releases/download/$(PKG_VERSION)/
 	FILE:=$(WEB_FILE)
-	HASH:=8cbff499a250ab5af859e3374f566c683925ef9b3efddce7ceeefdf44ef6fe04
+    URL_FILE:=web.zip
+	HASH:=5790b86afaf20c11798cf2efcd81747de9fda00da98a504eedb5fde46433165b
 endef
 
 define Build/Prepare
