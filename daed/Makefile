@@ -1,17 +1,10 @@
-# SPDX-License-Identifier: GPL-2.0-only
-#
-# Copyright (C) 2023 ImmortalWrt.org
-
-include $(TOPDIR)/rules.mk
-
 PKG_NAME:=daed
+PKG_VERSION:=0.3.3.p1
 PKG_RELEASE:=1
 
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/daeuniverse/daed.git
-PKG_SOURCE_DATE:=2023-08-14
-PKG_SOURCE_VERSION:=10c464f04e5ca608dd0d08c293ef7741a4d54811
-PKG_MIRROR_HASH:=10c464f04e5ca608dd0d08c293ef7741a4d54811
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=https://codeload.github.com/daeuniverse/daed/tar.gz/v$(PKG_VERSION)?
+PKG_HASH:=815c29c8e2a89c2eecdc29e31838a1ab0a4a18ea7a93b6f72bf6b8993bc73459
 
 PKG_LICENSE:=AGPL-3.0-only MIT
 PKG_LICENSE_FILES:=LICENSE wing/LICENSE
