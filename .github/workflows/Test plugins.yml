@@ -33,7 +33,7 @@ jobs:
           keep_minimum_runs: 0
 
       - name: Build
-        uses: kenzok8/gh-action-sdk@hash
+        uses: kenzok8/gh-action-sdk@main
         env:
           ARCH: ${{ matrix.arch }}-${{ matrix.sdk }}
           FEEDNAME: packages_ci
