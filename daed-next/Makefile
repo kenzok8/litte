@@ -13,7 +13,7 @@ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_VERSION:=102cb562b6962b44c47f38092284d2ab2506a702
 PKG_SOURCE_URL:=https://github.com/daeuniverse/daed-revived-next.git
-PKG_MIRROR_HASH:=skip
+PKG_MIRROR_HASH:=2c7d623c5609d70716fdb42bdeb2b231467144b6871255352740adf16cb6fef4
 
 PKG_BUILD_DIR=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)/wing
 PKG_BUILD_DEPENDS:=golang/host bpf-headers
@@ -63,7 +63,7 @@ define Download/daed-next
   URL:=https://github.com/QiuSimons/luci-app-daed-next/releases/download/daed-web-$(PKG_VERSION)/
   URL_FILE:=daed-web-$(PKG_VERSION).squashfs
   FILE:=daed-web-$(PKG_VERSION).squashfs
-  HASH:=skip
+  HASH:=8ca2ff56e6cde4af946d219db5a127d5eef7759a49b6dcf98498eb2f9c509269
 endef
 
 define Build/Prepare
