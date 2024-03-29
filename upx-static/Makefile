@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2020-2022 Hyy2001X <https://github.com/Hyy2001X>
 
 include $(TOPDIR)/rules.mk
 
