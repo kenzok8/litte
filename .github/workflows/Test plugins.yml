@@ -22,7 +22,7 @@ jobs:
           - x86_64
 
     steps:
-      - uses: actions/checkout@hash
+      - uses: actions/checkout@main
         with:
           fetch-depth: 0
 
@@ -33,7 +33,7 @@ jobs:
           keep_minimum_runs: 0
 
       - name: Build
-        uses: kenzok8/gh-action-sdk@main
+        uses: kenzok8/gh-action-sdk@hash
         env:
           ARCH: ${{ matrix.arch }}-${{ matrix.sdk }}
           FEEDNAME: packages_ci
