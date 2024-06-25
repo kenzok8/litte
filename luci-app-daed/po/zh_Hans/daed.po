@@ -1,0 +1,47 @@
+msgid "DAED"
+msgstr ""
+
+msgid "DAE Dashboard"
+msgstr "DAE 仪表板"
+
+msgid "A Linux high-performance transparent proxy solution based on eBPF"
+msgstr "一个基于 eBPF 的 Linux 高性能透明代理解决方案"
+
+msgid "Enabled"
+msgstr "启用"
+
+msgid "Enable Logs"
+msgstr "启用日志"
+
+msgid "Logfile retention count"
+msgstr "日志文件保留数量"
+
+msgid "Logfile Max Size (MB)"
+msgstr "日志文件大小（MB）"
+
+msgid "Logs"
+msgstr "日志"
+
+msgid "Clear logs"
+msgstr "清空日志"
+
+msgid "Basic Setting"
+msgstr "基本设置"
+
+msgid "RUNNING"
+msgstr "运行中"
+
+msgid "NOT RUNNING"
+msgstr "未运行"
+
+msgid "Collecting data..."
+msgstr "收集数据..."
+
+msgid "Open Web Interface"
+msgstr "打开 Web 界面"
+
+msgid "Listen Address"
+msgstr "监听地址"
+
+msgid "The kernel does not support eBPF"
+msgstr "内核不支持 eBPF"
