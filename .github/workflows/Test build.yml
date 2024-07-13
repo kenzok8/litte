@@ -1,10 +1,10 @@
-name: Test build
+name: All plugins build
 
 on:
   workflow_dispatch:
     inputs:
       plugins:
-        description: '输入要编译的插件名，空格分隔 (输入*表示编译所有插件)'
+        description: '输入要编译的插件名，空格分隔'
         required: true
         default: ''
 
@@ -19,6 +19,31 @@ jobs:
           - 23.05.2
         arch:
           - aarch64_cortex-a53
+          - aarch64_cortex-a72
+          - aarch64_generic
+          - arm_arm1176jzf-s_vfp
+          - arm_arm926ej-s
+          - arm_cortex-a15_neon-vfpv4
+          - arm_cortex-a5_vfpv4
+          - arm_cortex-a7
+          - arm_cortex-a7_neon-vfpv4
+          - arm_cortex-a8_vfpv3
+          - arm_cortex-a9
+          - arm_cortex-a9_neon
+          - arm_cortex-a9_vfpv3-d16
+          - arm_fa526
+          - arm_mpcore
+          - arm_xscale
+          - i386_pentium-mmx
+          - i386_pentium4
+          - mips64_octeonplus
+          - mips_24kc
+          - mips_4kec
+          - mips_mips32
+          - mipsel_24kc
+          - mipsel_24kc_24kf
+          - mipsel_74kc
+          - mipsel_mips32
           - x86_64
 
     steps:
@@ -30,18 +55,7 @@ jobs:
         uses: Mattraks/delete-workflow-runs@main
         with:
           retain_days: 2
-          keep_minimum_runs: 2 
-
-      - name: Set plugins environment variable
-        id: set_plugins
-        run: |
-          if [[ "${{ github.event.inputs.plugins }}" == "*" ]]; then
-            echo "Getting all plugins..."
-            PLUGINS=$(ls packages_ci)
-          else
-            PLUGINS=${{ github.event.inputs.plugins }}
-          fi
-          echo "PLUGINS=$PLUGINS" >> $GITHUB_ENV           
+          keep_minimum_runs: 2
 
       - name: Build
         uses: kenzok8/gh-action-sdk@hash
