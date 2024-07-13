@@ -37,7 +37,7 @@ jobs:
         run: |
           if [[ "${{ github.event.inputs.plugins }}" == "*" ]]; then
             echo "Getting all plugins..."
-            PLUGINS=$(ls packages) # 假设插件都在一个名为 packages 的目录下
+            PLUGINS=$(ls litte) # 假设插件都在一个名为 litte 的目录下
           else
             PLUGINS=${{ github.event.inputs.plugins }}
           fi
