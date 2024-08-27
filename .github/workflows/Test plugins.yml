@@ -33,7 +33,7 @@ jobs:
           keep_minimum_runs: 2
 
       - name: Build
-        uses: sbwml/openwrt-gh-action-sdk@go1.22
+        uses: kenzok8/gh-action-sdk@hash
         env:
           ARCH: ${{ matrix.arch }}-${{ matrix.sdk }}
           FEEDNAME: packages_ci
