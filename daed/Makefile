@@ -5,13 +5,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=daed
-PKG_VERSION:=0.7.0
+PKG_VERSION:=0.6.0
 PKG_RELEASE:=1
 
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/daeuniverse/daed.git
-PKG_SOURCE_VERSION:=v$(PKG_VERSION)
-PKG_MIRROR_HASH:=d1d867e15e3abae1993260b3728c285ce0cd5bcce98f2ba79e0026a7dc544dd1
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).zip
+PKG_SOURCE_URL:=https://github.com/daeuniverse/daed/releases/download/v$(PKG_VERSION)/daed-full-src.zip?
+PKG_HASH:=89100f1027790b94f94e84eee93c95ab073c0ccb1ebff4d6adc797907e0b4549
 
 PKG_LICENSE:=AGPL-3.0-only MIT
 PKG_LICENSE_FILES:=LICENSE wing/LICENSE
@@ -20,19 +19,20 @@ PKG_MAINTAINER:=Tianling Shen <cnsztl@immortalwrt.org>
 PKG_BUILD_DIR=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)/wing
 PKG_BUILD_DEPENDS:=golang/host bpf-headers
 PKG_BUILD_PARALLEL:=1
+PKG_USE_MIPS16:=0
 PKG_BUILD_FLAGS:=no-mips16
 
 GO_PKG:=github.com/daeuniverse/dae-wing
 GO_PKG_LDFLAGS:= \
 	-X '$(GO_PKG)/db.AppDescription=$(PKG_NAME) is a integration solution of dae, API and UI.'
-GO_PKG_LDFLAGS_X= \
+GO_PKG_LDFLAGS_X:= \
 	$(GO_PKG)/db.AppName=$(PKG_NAME) \
 	$(GO_PKG)/db.AppVersion=$(PKG_VERSION)
-GO_PKG_TAGS:=embedallowed,trace
+GO_PKG_TAGS:=embedallowed
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/bpf.mk
-include ../../lang/golang/golang-package.mk
+include $(TOPDIR)/feeds/packages/lang/golang/golang-package.mk
 
 TAR_CMD=$(HOST_TAR) -C $(BUILD_DIR)/ $(TAR_OPTIONS)
 
@@ -49,21 +49,7 @@ define Package/daed
   # You need enable KERNEL_DEBUG_INFO_BTF and KERNEL_BPF_EVENTS
   DEPENDS:=$(GO_ARCH_DEPENDS) $(BPF_DEPENDS) \
     +ca-bundle +kmod-sched-core +kmod-sched-bpf +kmod-xdp-sockets-diag \
-    +kmod-veth
-endef
-
-define Package/daed-geoip
-  $(call Package/daed/Default)
-  TITLE:=geoip for daed
-  DEPENDS:=+daed +v2ray-geoip
-  PKGARCH:=all
-endef
-
-define Package/daed-geosite
-  $(call Package/daed/Default)
-  TITLE:=geosite for daed
-  DEPENDS:=+daed +v2ray-geosite
-  PKGARCH:=all
+    +kmod-veth +v2ray-geoip +v2ray-geosite
 endef
 
 define Package/daed/description
@@ -81,7 +67,7 @@ define Download/daed-web
 	URL:=https://github.com/daeuniverse/daed/releases/download/v$(PKG_VERSION)
 	URL_FILE:=web.zip
 	FILE:=$(WEB_FILE)
-	HASH:=571ae9b49873f30640b71321f16a9a8ba11523356ad06bf381d44b307a8fa07a
+	HASH:=f8a5f28643c990408f7b6d324b4cc8b5e7445e6255689a5f10f5545be033c1ad
 endef
 
 define Build/Prepare
@@ -92,10 +78,10 @@ define Build/Prepare
 		unzip -q -d $(PKG_BUILD_DIR)/webrender/ $(DL_DIR)/$(WEB_FILE) ; \
 		find $(PKG_BUILD_DIR)/webrender/web -type f -size +4k ! -name "*.gz" ! -name "*.woff"  ! -name "*.woff2" -exec sh -c '\
 			gzip -9 -k "{}"; \
-			if [ "$$$$(stat -c %s "{}")" -lt "$$$$(stat -c %s "{}.gz")" ]; then \
-				rm "{}.gz"; \
+			if [ "$$$$(stat -c %s {})" -lt "$$$$(stat -c %s {}.gz)" ]; then \
+				rm {}.gz; \
 			else \
-				rm "{}"; \
+				rm {}; \
 			fi' \
 		";" ; \
 	)
@@ -114,18 +100,18 @@ endif
 define Build/Compile
 	( \
 		pushd $(PKG_BUILD_DIR) ; \
-		export \
 		$(GO_GENERAL_BUILD_CONFIG_VARS) \
 		$(GO_PKG_BUILD_CONFIG_VARS) \
-		$(GO_PKG_BUILD_VARS) ; \
+		$(GO_PKG_BUILD_VARS) \
 		go generate ./... ; \
 		cd dae-core ; \
-		export \
+		$(GO_GENERAL_BUILD_CONFIG_VARS) \
+		$(GO_PKG_BUILD_CONFIG_VARS) \
+		$(GO_PKG_BUILD_VARS) \
 		BPF_CLANG="$(CLANG)" \
 		BPF_STRIP_FLAG="-strip=$(LLVM_STRIP)" \
 		BPF_CFLAGS="$(DAE_CFLAGS)" \
 		BPF_TARGET="bpfel,bpfeb" \
-		BPF_TRACE_TARGET="$(GO_ARCH)" ; \
 		go generate control/control.go ; \
 		go generate trace/trace.go ; \
 		popd ; \
@@ -145,18 +131,6 @@ define Package/daed/install
 	$(INSTALL_BIN) $(CURDIR)/files/daed.init $(1)/etc/init.d/daed
 endef
 
-define Package/daed-geoip/install
-	$(INSTALL_DIR) $(1)/usr/share/daed
-	$(LN) ../v2ray/geoip.dat $(1)/usr/share/daed/geoip.dat
-endef
-
-define Package/daed-geosite/install
-	$(INSTALL_DIR) $(1)/usr/share/daed
-	$(LN) ../v2ray/geosite.dat $(1)/usr/share/daed/geosite.dat
-endef
-
 $(eval $(call Download,daed-web))
 $(eval $(call GoBinPackage,daed))
 $(eval $(call BuildPackage,daed))
-$(eval $(call BuildPackage,daed-geoip))
-$(eval $(call BuildPackage,daed-geosite))
