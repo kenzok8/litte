@@ -3,7 +3,7 @@ So this fork will not continue to provide support for new SB features in the fut
 Goodbye. everyone.
 
 For developers:
-The code of the dev/* branch has supported new SB functions up to 1.10.0-beta.3.
+The code of the dev/* branch has supported new SB features up to 1.10.0-beta.3.
 You can merge it yourself if necessary.
 
 TODO:
