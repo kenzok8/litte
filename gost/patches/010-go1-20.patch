@@ -48,7 +48,7 @@ Subject: [PATCH] go1.20
  module github.com/ginuerzh/gost
  
 -go 1.18
-+go 1.20
++go 1.23
  
  replace github.com/templexxx/cpu v0.0.7 => github.com/templexxx/cpu v0.0.10-0.20211111114238-98168dcec14a
  
