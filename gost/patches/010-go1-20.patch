@@ -1,7 +1,7 @@
 From 0f7376bd10c913c7e6b1e7e02dd5fd7769975d78 Mon Sep 17 00:00:00 2001
 From: ginuerzh <ginuerzh@gmail.com>
 Date: Sat, 4 Feb 2023 18:37:14 +0800
-Subject: [PATCH] go1.23.4
+Subject: [PATCH] go1.22
 
 ---
  Dockerfile   |   2 +-
@@ -18,7 +18,7 @@ index 123456..789012 100644
 +++ b/Dockerfile
 @@ -1,4 +1,4 @@
 -FROM --platform=$BUILDPLATFORM golang:1.19-alpine as builder
-+FROM --platform=$BUILDPLATFORM golang:1.23.4-alpine as builder
++FROM --platform=$BUILDPLATFORM golang:1.22-alpine as builder
 
  # Convert TARGETPLATFORM to GOARCH format
  # https://github.com/tonistiigi/xx
@@ -56,7 +56,7 @@ index abcdef..123456 100644
 +++ b/go.mod
 
 -go 1.18
-+go 1.23
++go 1.22
 
  replace github.com/templexxx/cpu v0.0.7 => github.com/templexxx/cpu v0.0.10-0.20211111114238-98168dcec14a
 
