@@ -18,40 +18,28 @@ return view.extend({
         const s = m.section(form.TypedSection, 'wifi-iface', _('Guest WiFi Settings'));
         s.anonymous = true;
         s.addremove = true;
-        s.filter = function(section_id) {
-            return uci.get('wireless', section_id, 'guest_wifi') === '1';
-        };
 
-        let o;
-
-        o = s.option(form.Flag, 'guest_wifi', _('Enable'),
+        s.option(form.Flag, 'guest_wifi', _('Enable'),
             _('Enable guest WiFi network'));
-        o.rmempty = false;
-        o.default = '0';
 
-        o = s.option(form.Value, 'ssid', _('Network Name (SSID)'));
-        o.rmempty = false;
+        s.option(form.Value, 'ssid', _('Network Name (SSID)'));
 
-        o = s.option(form.ListValue, 'encryption', _('Encryption'));
+        const o = s.option(form.ListValue, 'encryption', _('Encryption'));
         o.value('none', _('No Encryption'));
         o.value('psk2', _('WPA2-PSK'));
         o.value('sae', _('WPA3-SAE'));
         o.value('sae-mixed', _('WPA2/WPA3-Mixed'));
-        o.rmempty = false;
         o.default = 'psk2';
 
-        o = s.option(form.Value, 'key', _('Password'));
-        o.depends('encryption', 'psk2');
-        o.depends('encryption', 'sae');
-        o.depends('encryption', 'sae-mixed');
-        o.datatype = 'wpakey';
-        o.rmempty = false;
-        o.password = true;
+        const key = s.option(form.Value, 'key', _('Password'));
+        key.depends('encryption', 'psk2');
+        key.depends('encryption', 'sae');
+        key.depends('encryption', 'sae-mixed');
+        key.datatype = 'wpakey';
+        key.password = true;
 
-        o = s.option(form.Flag, 'isolate', _('AP Isolation'),
+        s.option(form.Flag, 'isolate', _('AP Isolation'),
             _('Prevents wireless clients from communicating with each other'));
-        o.rmempty = false;
-        o.default = '1';
 
         return m.render();
     }

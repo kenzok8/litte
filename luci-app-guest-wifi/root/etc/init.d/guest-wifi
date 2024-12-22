@@ -3,19 +3,14 @@
 START=99
 USE_PROCD=1
 
-start_service() {
-    config_load guest-wifi
-    local enabled
-    config_get enabled config enabled 0
-    
-    [ "$enabled" -eq 0 ] && return 0
-    
-    procd_open_instance
-    procd_set_param command /usr/sbin/guest-wifi
-    procd_set_param respawn
-    procd_close_instance
+reload_service() {
+    wifi reload
 }
 
 service_triggers() {
-    procd_add_reload_trigger "guest-wifi"
+    procd_add_reload_trigger "wireless"
+}
+
+start_service() {
+    reload_service
 }
