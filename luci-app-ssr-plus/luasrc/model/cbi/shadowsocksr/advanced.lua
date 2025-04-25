@@ -107,6 +107,9 @@ end
 if is_finded("dnsproxy") then
 	o:value("4", translate("Use DNSPROXY query and cache"))
 end
+if is_finded("chinadns-ng") then
+	o:value("5", translate("Use ChinaDNS-NG query and cache"))
+end
 o:depends("netflix_enable", "1")
 o.default = 1
 
@@ -160,6 +163,7 @@ if is_finded("dnsproxy") then
 
 	o = s:option(Value, "dnsproxy_shunt_forward", translate("Anti-pollution DNS Server"))
 	o:value("sdns://AgUAAAAAAAAABzguOC40LjQgsKKKE4EwvtIbNjGjagI2607EdKSVHowYZtyvD9iPrkkHOC44LjQuNAovZG5zLXF1ZXJ5", translate("Google DNSCrypt SDNS"))
+	o:value("sdns://AgcAAAAAAAAAACC2vD25TAYM7EnyCH8Xw1-0g5OccnTsGH9vQUUH0njRtAxkbnMudHduaWMudHcKL2Rucy1xdWVyeQ", translate("TWNIC-101 DNSCrypt SDNS"))
 	o:value("sdns://AgcAAAAAAAAADzE4NS4yMjIuMjIyLjIyMiAOp5Svj-oV-Fz-65-8H2VKHLKJ0egmfEgrdPeAQlUFFA8xODUuMjIyLjIyMi4yMjIKL2Rucy1xdWVyeQ", translate("dns.sb DNSCrypt SDNS"))
 	o:value("sdns://AgMAAAAAAAAADTE0OS4xMTIuMTEyLjkgsBkgdEu7dsmrBT4B4Ht-BQ5HPSD3n3vqQ1-v5DydJC8SZG5zOS5xdWFkOS5uZXQ6NDQzCi9kbnMtcXVlcnk", translate("Quad9 DNSCrypt SDNS"))
 	o:value("sdns://AQMAAAAAAAAAETk0LjE0MC4xNC4xNDo1NDQzINErR_JS3PLCu_iZEIbq95zkSV2LFsigxDIuUso_OQhzIjIuZG5zY3J5cHQuZGVmYXVsdC5uczEuYWRndWFyZC5jb20", translate("AdGuard DNSCrypt SDNS"))
@@ -187,6 +191,35 @@ if is_finded("dnsproxy") then
 	o:depends("shunt_parse_method", "parse_file")
 	o.rmempty = false
 	o.default = "1"
+end
+
+if is_finded("chinadns-ng") then
+	o = s:option(Value, "chinadns_ng_shunt_dnsserver", translate("Anti-pollution DNS Server For Shunt Mode"))
+	o:value("8.8.4.4:53", translate("Google Public DNS (8.8.4.4)"))
+	o:value("8.8.8.8:53", translate("Google Public DNS (8.8.8.8)"))
+	o:value("208.67.222.222:53", translate("OpenDNS (208.67.222.222)"))
+	o:value("208.67.220.220:53", translate("OpenDNS (208.67.220.220)"))
+	o:value("209.244.0.3:53", translate("Level 3 Public DNS (209.244.0.3)"))
+	o:value("209.244.0.4:53", translate("Level 3 Public DNS (209.244.0.4)"))
+	o:value("4.2.2.1:53", translate("Level 3 Public DNS (4.2.2.1)"))
+	o:value("4.2.2.2:53", translate("Level 3 Public DNS (4.2.2.2)"))
+	o:value("4.2.2.3:53", translate("Level 3 Public DNS (4.2.2.3)"))
+	o:value("4.2.2.4:53", translate("Level 3 Public DNS (4.2.2.4)"))
+	o:value("1.1.1.1:53", translate("Cloudflare DNS (1.1.1.1)"))
+	o:depends("shunt_dns_mode", "5")
+	o.description = translate(
+    	"<ul>" ..
+    	"<li>" .. translate("Custom DNS Server format as IP:PORT (default: 8.8.4.4:53)") .. "</li>" .. 
+    	"<li>" .. translate("Muitiple DNS server can saperate with ','") .. "</li>" ..
+    	"</ul>"
+	)
+
+	o = s:option(ListValue, "chinadns_ng_shunt_proto", translate("ChinaDNS-NG shunt query protocol"))
+	o:value("none", translate("UDP/TCP upstream"))
+	o:value("tcp", translate("TCP upstream"))
+	o:value("udp", translate("UDP upstream"))
+	o:value("tls", translate("DoT upstream (Need use wolfssl version)"))
+	o:depends("shunt_dns_mode", "5")
 end
 
 o = s:option(Flag, "apple_optimization", translate("Apple domains optimization"), translate("For Apple domains equipped with Chinese mainland CDN, always responsive to Chinese CDN IP addresses"))
