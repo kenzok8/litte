@@ -3,7 +3,7 @@ include $(TOPDIR)/rules.mk
 LUCI_TITLE:=luci-app-ssr-plus
 LUCI_PKGARCH:=all
 PKG_NAME:=luci-app-ssr-plus
-PKG_VERSION:=190
+PKG_VERSION:=218-aarch64_cortex-a53
 PKG_RELEASE:=3
 
 PKG_CONFIG_DEPENDS:= \

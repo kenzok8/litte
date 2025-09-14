@@ -6,7 +6,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-alist
-PKG_VERSION:=1.0.13
+PKG_VERSION:=218-aarch64_cortex-a53
 PKG_RELEASE:=1
 
 LUCI_TITLE:=LuCI support for alist

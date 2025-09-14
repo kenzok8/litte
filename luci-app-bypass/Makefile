@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-bypass
-PKG_VERSION:=1.2
+PKG_VERSION:=218-aarch64_cortex-a53
 PKG_RELEASE:=21
 
 PKG_CONFIG_DEPENDS:= \
