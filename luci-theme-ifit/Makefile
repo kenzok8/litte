@@ -10,7 +10,7 @@ THEME_NAME:=ifit
 THEME_TITLE:=ifit
 
 PKG_NAME:=luci-theme-$(THEME_NAME)
-PKG_VERSION:=218-aarch64_cortex-a53
+PKG_VERSION:=1.5.2
 
 PKG_RELEASE:=1
 
