@@ -1138,8 +1138,7 @@ return view.extend({
 		so.validate = function(section_id, value) {
 			let n = 0;
 
-			return hm.validateCustomListIDs.call(this, [
-				['input', this.option],
+			return hm.validatePresetIDs.call(this, [
 				['select', 'type'],
 				['select', `payload${n}_` + 'rule_set']
 			], ...arguments);
@@ -1482,7 +1481,7 @@ return view.extend({
 		so.modalonly = true;
 
 		so = ss.option(form.Flag, 'ecs-override', _('ECS override'),
-			_('Override ECS in original request.'));
+			_('Override the existing ECS in original request.'));
 		so.default = so.disabled;
 		so.load = function(section_id) {
 			return boolToFlag(new DNSAddress(uci.get(data[0], section_id, 'address')).parseParam('ecs-override') ? true : false);
@@ -1589,8 +1588,7 @@ return view.extend({
 		so.default = so.enabled;
 		so.editable = true;
 		so.validate = function(section_id, value) {
-			return hm.validateCustomListIDs.call(this, [
-				['input', this.option],
+			return hm.validatePresetIDs.call(this, [
 				['select', 'type'],
 				['', 'rule_set']
 			], ...arguments);

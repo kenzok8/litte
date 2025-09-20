@@ -64,6 +64,14 @@ const dashrepos_urlparams = {
 	'metacubex/razord-meta': '?host=%s&port=%s&secret=%s'
 };
 
+const log_levels = [
+	['silent', _('Silent')],
+	['error', _('Error')],
+	['warning', _('Warning')],
+	['info', _('Info')],
+	['debug', _('Debug')]
+];
+
 const glossary = {
 	proxy_group: {
 		prefmt: 'group_%s',
@@ -171,11 +179,13 @@ const preset_outbound = {
 	],
 	direct: [
 		['', _('null')],
-		['DIRECT']
+		['DIRECT'],
+		['GLOBAL']
 	],
 	dns: [
 		['', 'RULES'],
-		['DIRECT']
+		['DIRECT'],
+		['GLOBAL']
 	]
 };
 
@@ -968,7 +978,7 @@ function renderResDownload(section_id) {
 		E('button', {
 			class: 'cbi-button cbi-button-add',
 			disabled: (type !== 'http') || null,
-			click: ui.createHandlerFn(this, function(section_type, section_id, type, url, header) {
+			click: ui.createHandlerFn(this, (section_type, section_id, type, url, header) => {
 				if (type === 'http') {
 					return downloadFile(section_type, section_id, url, header).then((res) => {
 						ui.addNotification(null, E('p', _('Download successful.')));
@@ -1068,7 +1078,7 @@ function handleRemoveIdles() {
 					E('button', {
 						class: 'cbi-button cbi-button-negative important',
 						id: 'rmidles.' + filename + '.button',
-						click: ui.createHandlerFn(this, function(filename) {
+						click: ui.createHandlerFn(this, (filename) => {
 							return removeFile(section_type, filename).then((res) => {
 								let node = document.getElementById('rmidles.' + filename + '.label');
 								node.innerHTML = '<s>%s</s>'.format(node.innerHTML);
@@ -1100,15 +1110,17 @@ function textvalue2Value(section_id) {
 	return this.vallist[i];
 }
 
-function validateCustomListIDs(disoption_list, section_id) {
+function validatePresetIDs(disoption_list, section_id) {
 	let node;
 	let hm_prefmt = glossary[this.section.sectiontype].prefmt;
-	let custom_dp_list_ids = [
+	let preset_ids = [
 		'fchomo_direct_list',
-		'fchomo_proxy_list'
+		'fchomo_proxy_list',
+		'fchomo_china_list',
+		'fchomo_gfw_list'
 	];
 
-	if (custom_dp_list_ids.map((v) => hm_prefmt.format(v)).includes(section_id)) {
+	if (preset_ids.map((v) => hm_prefmt.format(v)).includes(section_id)) {
 		disoption_list.forEach(([typ, opt]) => {
 			node = this.section.getUIElement(section_id, opt)?.node;
 			(typ ? node?.querySelector(typ) : node)?.setAttribute(typ === 'textarea' ? 'readOnly' : 'disabled', '');
@@ -1418,6 +1430,7 @@ return baseclass.extend({
 	stunserver,
 	dashrepos,
 	dashrepos_urlparams,
+	log_levels,
 	glossary,
 	health_checkurls,
 	inbound_type,
@@ -1475,7 +1488,7 @@ return baseclass.extend({
 	handleReload,
 	handleRemoveIdles,
 	textvalue2Value,
-	validateCustomListIDs,
+	validatePresetIDs,
 	validateAuth,
 	validateAuthUsername,
 	validateAuthPassword,
