@@ -66,7 +66,6 @@ luci-theme-atmaterial_new=1.2
 xray-plugin=1.8.24
 gn=81b24e01531ecf0eff12ec9359a555ec3944ec4e
 luci-app-advanced=1.20
-luci-app-adblock-fast=1.1.4
 tuic-client=1.0.0
 luci-app-mosdns=1.5.23
 hysteria=2.6.3
