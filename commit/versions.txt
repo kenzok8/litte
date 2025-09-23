@@ -1,7 +1,7 @@
 taskd=1.0.3
 luci-app-dockerman=v0.5.26
 xray-core=25.9.11
-UnblockNeteaseMusic=0.27.10
+UnblockNeteaseMusic=0.28.0
 naiveproxy=140.0.7339.123-1
 dns2socks=2.1
 luci-app-easymesh=2.0
