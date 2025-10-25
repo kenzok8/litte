@@ -1,6 +1,6 @@
 luci-app-istorex=0.6.6
 luci-app-momo=1.0.5
-luci-app-ddns-go=1.6.2
+luci-app-ddns-go=1.6.3
 ssocks=0.0.14
 luci-app-argone-config=1.2
 sing-box=1.12.11
