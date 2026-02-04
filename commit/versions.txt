@@ -98,5 +98,5 @@ luci-app-easymesh=2.0
 gost=3.2.6
 luci-app-dockerman=v0.5.26
 upx-static=4.2.4
-xray-core=26.2.2
+xray-core=26.2.4
 luci-theme-atmaterial_new=1.2
