@@ -7,11 +7,6 @@
 
 include $(TOPDIR)/rules.mk
 
-# Checklist when bumping versions
-#
-# - update cipher list by checking src/crypto.c:crypto_init()
-# - check if default mode has changed from being tcp_only
-#
 PKG_NAME:=shadowsocks-libev
 PKG_VERSION:=3.3.6
 PKG_RELEASE:=1
