@@ -11,9 +11,11 @@ PKG_NAME:=shadowsocks-libev
 PKG_VERSION:=3.3.6
 PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://codeload.github.com/shadowsocks/shadowsocks-libev/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=361cb5479a72a32f1defe904a6ab9151dc417e749e7ae5ae97ede295adaa65f4
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_URL:=https://github.com/shadowsocks/shadowsocks-libev.git
+PKG_SOURCE_VERSION:=v$(PKG_VERSION)
+PKG_SOURCE_SUBMODULES:=1
+PKG_MIRROR_HASH:=skip
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
@@ -23,13 +25,13 @@ PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=LICENSE
 PKG_CPE_ID:=cpe:/a:shadowsocks:shadowsocks-libev
 
-PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
 PKG_BUILD_FLAGS:=no-mips16 lto
 PKG_BUILD_PARALLEL:=1
 PKG_BUILD_DEPENDS:=c-ares pcre2
 
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/cmake.mk
 
 define Package/shadowsocks-libev/Default
   define Package/shadowsocks-libev-$(1)
@@ -68,12 +70,6 @@ define Build/Prepare
 			-o -name '.libs' \
 		| $(XARGS) rm -rvf
 endef
-
-CONFIGURE_ARGS += \
-	--disable-documentation \
-	--disable-silent-rules \
-	--disable-assert \
-	--disable-ssp \
 
 TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed
 

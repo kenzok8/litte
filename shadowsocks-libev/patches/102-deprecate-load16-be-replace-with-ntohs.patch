@@ -16,12 +16,14 @@ diff --git a/src/aead.c b/src/aead.c
 index 73349da64..e5d9b01e7 100644
 --- a/src/aead.c
 +++ b/src/aead.c
-@@ -605,7 +605,7 @@ aead_chunk_decrypt(cipher_ctx_t *ctx, uint8_t *p, uint8_t *c, uint8_t *n,
+@@ -605,7 +605,9 @@ aead_chunk_decrypt(cipher_ctx_t *ctx, uint8_t *p, uint8_t *c, uint8_t *n,
          return CRYPTO_ERROR;
      assert(*plen == CHUNK_SIZE_LEN);
  
 -    mlen = load16_be(len_buf);
-+    mlen = ntohs(*(uint16_t*)len_buf);
++    uint16_t mlen_buf;
++    memcpy(&mlen_buf, len_buf, sizeof(mlen_buf));
++    mlen = ntohs(mlen_buf);
      mlen = mlen & CHUNK_SIZE_MASK;
  
      if (mlen == 0)
@@ -29,30 +31,36 @@ diff --git a/src/local.c b/src/local.c
 index fa1ca7b31..76d46de17 100644
 --- a/src/local.c
 +++ b/src/local.c
-@@ -382,7 +382,7 @@ server_handshake(EV_P_ ev_io *w, buffer_t *buf)
+@@ -382,7 +382,9 @@ server_handshake(EV_P_ ev_io *w, buffer_t *buf)
          abuf->len += in_addr_len + 2;
  
          if (acl || verbose) {
 -            uint16_t p = load16_be(buf->data + request_len + in_addr_len);
-+            uint16_t p = ntohs(*(uint16_t*)(buf->data + request_len + in_addr_len));
++            uint16_t p_buf;
++            memcpy(&p_buf, buf->data + request_len + in_addr_len, sizeof(p_buf));
++            uint16_t p = ntohs(p_buf);
              if (!inet_ntop(AF_INET, (const void *)(buf->data + request_len),
                             ip, INET_ADDRSTRLEN)) {
                  LOGI("inet_ntop(AF_INET): %s", strerror(errno));
-@@ -400,7 +400,7 @@ server_handshake(EV_P_ ev_io *w, buffer_t *buf)
+@@ -400,7 +402,9 @@ server_handshake(EV_P_ ev_io *w, buffer_t *buf)
          abuf->len += name_len + 2;
  
          if (acl || verbose) {
 -            uint16_t p = load16_be(buf->data + request_len + 1 + name_len);
-+            uint16_t p = ntohs(*(uint16_t*)(buf->data + request_len + 1 + name_len));
++            uint16_t p_buf;
++            memcpy(&p_buf, buf->data + request_len + 1 + name_len, sizeof(p_buf));
++            uint16_t p = ntohs(p_buf);
              memcpy(host, buf->data + request_len + 1, name_len);
              host[name_len] = '\0';
              sprintf(port, "%d", p);
-@@ -414,7 +414,7 @@ server_handshake(EV_P_ ev_io *w, buffer_t *buf)
+@@ -414,7 +418,9 @@ server_handshake(EV_P_ ev_io *w, buffer_t *buf)
          abuf->len += in6_addr_len + 2;
  
          if (acl || verbose) {
 -            uint16_t p = load16_be(buf->data + request_len + in6_addr_len);
-+            uint16_t p = ntohs(*(uint16_t*)(buf->data + request_len + in6_addr_len));
++            uint16_t p_buf;
++            memcpy(&p_buf, buf->data + request_len + in6_addr_len, sizeof(p_buf));
++            uint16_t p = ntohs(p_buf);
              if (!inet_ntop(AF_INET6, (const void *)(buf->data + request_len),
                             ip, INET6_ADDRSTRLEN)) {
                  LOGI("inet_ntop(AF_INET6): %s", strerror(errno));
@@ -60,12 +68,14 @@ diff --git a/src/server.c b/src/server.c
 index 73b65996d..be8c6ffcf 100644
 --- a/src/server.c
 +++ b/src/server.c
-@@ -1129,7 +1129,7 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
+@@ -1129,7 +1129,9 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
              return;
          }
  
 -        port = ntohs(load16_be(server->buf->data + offset));
-+        port = *(uint16_t*)(server->buf->data + offset);
++        uint16_t port_buf;
++        memcpy(&port_buf, server->buf->data + offset, sizeof(port_buf));
++        port = ntohs(port_buf);
  
          offset += 2;
  
@@ -73,12 +83,14 @@ diff --git a/src/udprelay.c b/src/udprelay.c
 index 5de38830a..f6a5a7c25 100644
 --- a/src/udprelay.c
 +++ b/src/udprelay.c
-@@ -316,7 +316,7 @@ parse_udprelay_header(const char *buf, const size_t buf_len,
+@@ -316,7 +316,9 @@ parse_udprelay_header(const char *buf, const size_t buf_len,
      }
  
      if (port != NULL) {
 -        sprintf(port, "%d", load16_be(buf + offset));
-+        sprintf(port, "%d", ntohs(*(uint16_t*)(buf + offset)));
++        uint16_t port_buf;
++        memcpy(&port_buf, buf + offset, sizeof(port_buf));
++        sprintf(port, "%d", ntohs(port_buf));
      }
      offset += 2;
  
