@@ -65,7 +65,7 @@ index 73b65996d..be8c6ffcf 100644
          }
  
 -        port = ntohs(load16_be(server->buf->data + offset));
-+        port = ntohs(*(uint16_t*)(server->buf->data + offset));
++        port = *(uint16_t*)(server->buf->data + offset);
  
          offset += 2;
  
