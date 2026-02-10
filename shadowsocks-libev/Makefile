@@ -18,7 +18,7 @@ PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/shadowsocks/shadowsocks-libev/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=skip
+PKG_HASH:=361cb5479a72a32f1defe904a6ab9151dc417e749e7ae5ae97ede295adaa65f4
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
