@@ -1,5 +1,5 @@
 xray-plugin=1.8.24
-lucky=2.26.2
+lucky=2.27.2
 momo=2025.12.31
 luci-app-ddns-go=1.6.5
 luci-app-wechatpush=2.06.2
@@ -8,7 +8,7 @@ luci-app-aliddns=0.4.2
 luci-theme-alpha=3.9.5-beta
 lua-neturl=1.2-1
 luci-theme-opentopd=1.6.0
-filebrowser=2.58.0
+filebrowser=2.59.0
 shadowsocks-rust=1.24.0
 dockerd=29.2.1
 alist=3.57.0
