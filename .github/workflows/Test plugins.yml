@@ -42,13 +42,29 @@ jobs:
           NO_REFRESH_CHECK: true
           IGNORE_ERRORS: true
 
+      - name: Detect built ipk files
+        id: detect_ipk
+        run: |
+          shopt -s nullglob
+          files=(bin/packages/${{ matrix.arch }}/packages_ci/*.ipk)
+          if [ ${#files[@]} -gt 0 ]; then
+            echo "has_ipk=true" >> $GITHUB_OUTPUT
+            printf '%s\n' "${files[@]}"
+          else
+            echo "has_ipk=false" >> $GITHUB_OUTPUT
+            echo "No ipk output found for: ${{ github.event.inputs.plugins }}"
+            echo "Host-only packages (for example gn) are expected to have no ipk artifacts."
+          fi
+
       - name: Store packages
+        if: steps.detect_ipk.outputs.has_ipk == 'true'
         uses: actions/upload-artifact@main
         with:
           name: ${{ matrix.arch }}-${{ matrix.sdk }}
           path: bin/packages/${{ matrix.arch }}/packages_ci/*.ipk
 
       - name: Zip packages
+        if: steps.detect_ipk.outputs.has_ipk == 'true'
         run: |
           tar -zcvf ${{ matrix.arch }}-${{ matrix.sdk }}.tar.gz bin/packages/${{ matrix.arch }}/packages_ci/*.ipk
           echo -e "**文件说明** 🙈:\n" >> release.txt
@@ -58,6 +74,7 @@ jobs:
           echo -e "4. 如果单独安装ssr与依赖，\`rm -rf {*passwall*,*bypass*}\`\n" >> release.txt
 
       - name: Upload packages
+        if: steps.detect_ipk.outputs.has_ipk == 'true'
         uses: ncipollo/release-action@main
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -66,6 +83,11 @@ jobs:
           replacesArtifacts: true
           bodyFile: "release.txt"
           tag: ${{ github.run_number }}-${{ matrix.arch }}
+
+      - name: Skip release for host-only packages
+        if: steps.detect_ipk.outputs.has_ipk != 'true'
+        run: |
+          echo "Skip artifact/release upload because no ipk was produced."
     
       - name: Remove old Releases
         uses: dev-drprasad/delete-older-releases@master
