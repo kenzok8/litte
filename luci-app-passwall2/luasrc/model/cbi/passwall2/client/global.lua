@@ -90,11 +90,12 @@ o.template = appname .. "/cbi/nodes_listvalue"
 o:value("", translate("Close"))
 o.group = {""}
 
+current_node_id = m.uci:get(appname, global_cfgid, "node")
+current_node = current_node_id and m.uci:get_all(appname, current_node_id) or {}
+
 -- Shunt Start
 if (has_singbox or has_xray) and #nodes_table > 0 then
 	if #normal_list > 0 then
-		current_node_id = m.uci:get(appname, global_cfgid, "node")
-		current_node = current_node_id and m.uci:get_all(appname, current_node_id) or {}
 		if current_node.protocol == "_shunt" then
 			local shunt_lua = loadfile("/usr/lib/lua/luci/model/cbi/passwall2/client/include/shunt_options.lua")
 			setfenv(shunt_lua, getfenv(1))(m, s, {
@@ -177,8 +178,13 @@ o = s:taboption("DNS", ListValue, "remote_dns_protocol", translate("Remote DNS P
 o:value("tcp", "TCP")
 o:value("doh", "DoH")
 o:value("udp", "UDP")
+if current_node.type == "sing-box" then
+	o:value("tls", "TLS(DoT)")
+	o:value("quic", "QUIC(DoQ)")
+	o:value("http3", "HTTP3(DoH3)")
+end
 
----- DNS Forward
+---- DNS over TCP or UDP or TLS (DoT) or QUIC (DoQ)
 o = s:taboption("DNS", Value, "remote_dns", translate("Remote DNS"))
 o.datatype = "or(ipaddr,ipaddrport)"
 o.default = "1.1.1.1"
@@ -192,8 +198,10 @@ o:value("208.67.220.220", "208.67.220.220 (OpenDNS)")
 o:value("208.67.222.222", "208.67.222.222 (OpenDNS)")
 o:depends("remote_dns_protocol", "tcp")
 o:depends("remote_dns_protocol", "udp")
+o:depends("remote_dns_protocol", "quic")
+o:depends("remote_dns_protocol", "tls")
 
----- DoH
+---- DNS over HTTP (DoH) or DNS over HTTP3(DoH3)
 o = s:taboption("DNS", Value, "remote_dns_doh", translate("Remote DNS DoH"))
 o.default = "https://1.1.1.1/dns-query"
 o:value("https://1.1.1.1/dns-query", "CloudFlare")
@@ -208,6 +216,7 @@ o:value("https://doh.libredns.gr/dns-query,116.202.176.26", "LibreDNS")
 o:value("https://doh.libredns.gr/ads,116.202.176.26", "LibreDNS (No Ads)")
 o.validate = doh_validate
 o:depends("remote_dns_protocol", "doh")
+o:depends("remote_dns_protocol", "http3")
 
 o = s:taboption("DNS", Value, "remote_dns_client_ip", translate("Remote DNS EDNS Client Subnet"))
 o.description = translate("Notify the DNS server when the DNS query is notified, the location of the client (cannot be a private IP address).") .. "<br />" ..
@@ -232,12 +241,11 @@ o:value("UseIPv6")
 o = s:taboption("DNS", TextValue, "dns_hosts", translate("Domain Override"))
 o.rows = 5
 o.wrap = "off"
-o:depends({ __hide = true })
 o.remove = function(self, section)
 	local node_value = s.fields["node"]:formvalue(global_cfgid)
 	if node_value then
 		local node_t = m:get(node_value) or {}
-		if node_t.type == "Xray" then
+		if node_t.type == "Xray" or node_t.type == "sing-box" then
 			AbstractValue.remove(self, section)
 		end
 	end
@@ -256,13 +264,6 @@ function o.cfgvalue(self, section)
 		[[<button type="button" class="cbi-button cbi-button-remove" onclick="location.href='%s'">%s</button>]],
 		api.url("flush_set") .. "?redirect=1&reload=1", set_title)
 end
-
-o = s:taboption("DNS", DummyValue, "_xray_node", "")
-o.template = "passwall2/cbi/hidevalue"
-o.value = "1"
-o:depends({ __hide = true })
-
-s.fields["dns_hosts"]:depends({ _xray_node = "1" })
 
 s:tab("log", translate("Log"))
 o = s:taboption("log", Flag, "log_node", translate("Enable Node Log"))
@@ -354,9 +355,6 @@ for k, v in pairs(nodes_table) do
 	o_node.group[#o_node.group+1] = (v.group and v.group ~= "") and v.group or translate("default")
 	o_socks:value(v.id, v["remark"])
 	o_socks.group[#o_socks.group+1] = (v.group and v.group ~= "") and v.group or translate("default")
-	if v.type == "Xray" then
-		s.fields["_xray_node"]:depends({ node = v.id })
-	end
 	if v.node_type == "normal" or v.protocol == "_balancing" or v.protocol == "_urltest" then
 		--Shunt node has its own separate options.
 		s.fields["remote_fakedns"]:depends({ node = v.id })

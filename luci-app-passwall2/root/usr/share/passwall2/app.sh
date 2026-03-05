@@ -330,21 +330,26 @@ run_singbox() {
 		json_add_string "direct_dns_query_strategy" "${direct_dns_query_strategy}"
 
 		case "$remote_dns_protocol" in
-			udp)
+			udp|\
+			quic)
 				local _dns=$(get_first_dns remote_dns_udp_server 53 | sed 's/#/:/g')
 				local _dns_address=$(echo ${_dns} | awk -F ':' '{print $1}')
 				local _dns_port=$(echo ${_dns} | awk -F ':' '{print $2}')
 				json_add_string "remote_dns_udp_port" "${_dns_port}"
 				json_add_string "remote_dns_udp_server" "${_dns_address}"
+				[ "$remote_dns_protocol" == "quic" ] && json_add_string "remote_dns_quic" "1"
 			;;
-			tcp)
+			tcp|\
+			tls)
 				local _dns=$(get_first_dns remote_dns_tcp_server 53 | sed 's/#/:/g')
 				local _dns_address=$(echo ${_dns} | awk -F ':' '{print $1}')
 				local _dns_port=$(echo ${_dns} | awk -F ':' '{print $2}')
 				json_add_string "remote_dns_tcp_port" "${_dns_port}"
 				json_add_string "remote_dns_tcp_server" "${_dns_address}"
+				[ "$remote_dns_protocol" == "tls" ] && json_add_string "remote_dns_tls" "1"
 			;;
-			doh)
+			doh|\
+			http3)
 				local _doh_url=$(echo $remote_dns_doh | awk -F ',' '{print $1}')
 				local _doh_host_port=$(lua_api "get_domain_from_url(\"${_doh_url}\")")
 				#local _doh_host_port=$(echo $_doh_url | sed "s/https:\/\///g" | awk -F '/' '{print $1}')
@@ -358,6 +363,7 @@ run_singbox() {
 				json_add_string "remote_dns_doh_port" "${_doh_port}"
 				json_add_string "remote_dns_doh_url" "${_doh_url}"
 				json_add_string "remote_dns_doh_host" "${_doh_host}"
+				[ "$remote_dns_protocol" == "http3" ] && json_add_string "remote_dns_http3" "1"
 			;;
 		esac
 
@@ -643,15 +649,18 @@ run_global() {
 	[ -n "$REMOTE_DNS_PROTOCOL" ] && {
 		V2RAY_ARGS="${V2RAY_ARGS} remote_dns_protocol=${REMOTE_DNS_PROTOCOL} remote_dns_detour=${REMOTE_DNS_DETOUR}"
 		case "$REMOTE_DNS_PROTOCOL" in
-			udp*)
+			udp|\
+			quic)
 				V2RAY_ARGS="${V2RAY_ARGS} remote_dns_udp_server=${REMOTE_DNS}"
 				dns_msg="${dns_msg} $(i18n "Remote DNS: %s" "${REMOTE_DNS}")"
 			;;
-			tcp)
+			tcp|\
+			tls)
 				V2RAY_ARGS="${V2RAY_ARGS} remote_dns_tcp_server=${REMOTE_DNS}"
 				dns_msg="${dns_msg} $(i18n "Remote DNS: %s" "${REMOTE_DNS}")"
 			;;
-			doh)
+			doh|\
+			http3)
 				REMOTE_DNS_DOH=$(config_t_get global remote_dns_doh "https://1.1.1.1/dns-query")
 				V2RAY_ARGS="${V2RAY_ARGS} remote_dns_doh=${REMOTE_DNS_DOH}"
 				dns_msg="${dns_msg} $(i18n "Remote DNS: %s" "${REMOTE_DNS_DOH}")"
@@ -1071,7 +1080,12 @@ acl_app() {
 				direct_dns_query_strategy=${direct_dns_query_strategy:-UseIP}
 				remote_dns_protocol=${remote_dns_protocol:-tcp}
 				remote_dns=${remote_dns:-1.1.1.1}
-				[ "$remote_dns_protocol" = "doh" ] && remote_dns=${remote_dns_doh:-https://1.1.1.1/dns-query}
+				case "$remote_dns_protocol" in
+					doh|\
+					http3)
+						remote_dns=${remote_dns_doh:-https://1.1.1.1/dns-query}
+					;;
+				esac
 				remote_dns_detour=${remote_dns_detour:-remote}
 				remote_fakedns=${remote_fakedns:-0}
 				remote_dns_query_strategy=${remote_dns_query_strategy:-UseIPv4}
@@ -1189,6 +1203,20 @@ start() {
 	start_crontab
 	log_i18n 0 "Running complete!"
 	echolog "\n"
+
+	[ "$ENABLED" = 1 ] && [ "$1" = "boot" ] && {
+		local cfgids item
+		for item in $(uci show ${CONFIG} | grep "=subscribe_list" | cut -d '.' -sf 2 | cut -d '=' -sf 1); do
+			if [ "$(config_n_get "$item" boot_update 0)" = "1" ]; then
+				local cfgid=$(uci show ${CONFIG}.$item | head -n 1 | cut -d '.' -sf 2 | cut -d '=' -sf 1)
+				cfgids="${cfgids:+$cfgids,}$cfgid"
+			fi
+		done
+		[ -n "$cfgids" ] && {
+			sleep 5
+			lua $APP_PATH/subscribe.lua start $cfgids cron > /dev/null 2>&1 &
+		}
+	}
 }
 
 stop() {
@@ -1306,7 +1334,7 @@ socks_node_switch)
 	socks_node_switch $@
 	;;
 start)
-	start
+	start $@
 	;;
 stop)
 	stop

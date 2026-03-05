@@ -43,7 +43,9 @@ function index()
 	end
 	entry({"admin", "services", appname, "app_update"}, cbi(appname .. "/client/app_update"), _("App Update"), 95).leaf = true
 	entry({"admin", "services", appname, "rule"}, cbi(appname .. "/client/rule"), _("Rule Manage"), 96).leaf = true
-	entry({"admin", "services", appname, "geoview"}, form(appname .. "/client/geoview"), _("Geo View"), 97).leaf = true
+	if api.finded_com("geoview") then
+		entry({"admin", "services", appname, "geoview"}, form(appname .. "/client/geoview"), _("Geo View"), 97).leaf = true
+	end
 	entry({"admin", "services", appname, "node_subscribe_config"}, cbi(appname .. "/client/node_subscribe_config")).leaf = true
 	entry({"admin", "services", appname, "node_config"}, cbi(appname .. "/client/node_config")).leaf = true
 	entry({"admin", "services", appname, "shunt_rules"}, cbi(appname .. "/client/shunt_rules")).leaf = true
@@ -787,13 +789,14 @@ function geo_view()
 	local geoip_path = geo_dir .. "/geoip.dat"
 	local geo_type, file_path, cmd
 	local geo_string = ""
+	local bin = api.finded_com("geoview")
 	if action == "lookup" then
 		if api.datatypes.ipaddr(value) or api.datatypes.ip6addr(value) then
 			geo_type, file_path = "geoip", geoip_path
 		else
 			geo_type, file_path = "geosite", geosite_path
 		end
-		cmd = string.format("geoview -type %s -action lookup -input '%s' -value '%s' -lowmem=true", geo_type, file_path, value)
+		cmd = string.format("%q -type %q -action lookup -input %q -value %q -lowmem=true", bin, geo_type, file_path, value)
 		geo_string = luci.sys.exec(cmd):lower()
 		if geo_string ~= "" then
 			local lines, rules, seen = {}, {}, {}
@@ -821,7 +824,7 @@ function geo_view()
 		if prefix and list and list ~= "" then
 			geo_type = prefix:sub(1, -2)
 			file_path = (geo_type == "geoip") and geoip_path or geosite_path
-			cmd = string.format("geoview -type %s -action extract -input '%s' -list '%s' -lowmem=true", geo_type, file_path, list)
+			cmd = string.format("%q -type %q -action extract -input %q -list %q -lowmem=true", bin, geo_type, file_path, list)
 			geo_string = luci.sys.exec(cmd)
 		end
 	end
