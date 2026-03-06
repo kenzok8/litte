@@ -3,6 +3,19 @@
     <img src="https://img.vim-cn.com/7f/270400123d9c4385c11d0aed32979f35d80578.png" alt="图飞了😂" title="opentopd" align="right" height="180" />
 </a>
 
+<h1 align="center">
+  <br>luci-theme-opentopd<br>
+</h1>
+
+<p align="center">
+<a href="https://openwrt.org"><img alt="OpenWrt" src="https://img.shields.io/badge/OpenWrt-%E2%89%A518.06-ff0000?logo=openwrt&logoColor=white"></a>
+<a href="https://www.google.com/chrome/"><img alt="Chrome" src="https://img.shields.io/badge/Chrome-%E2%89%A5111-4285F3?logo=googlechrome&logoColor=white"></a>
+<a href="https://www.apple.com/safari/"><img alt="Safari" src="https://img.shields.io/badge/Safari-%E2%89%A516.4-000000?logo=safari&logoColor=white"></a>
+<a href="https://www.mozilla.org/firefox/"><img alt="Firefox" src="https://img.shields.io/badge/Firefox-%E2%89%A5128-FF7138?logo=firefoxbrowser&logoColor=white"></a>
+<a target="_blank" href="https://github.com/sirpdboy/luci-theme-opentopd/releases"> <img alt="GitHub release" src="https://img.shields.io/github/v/release/sirpdboy/luci-theme-opentopd"></a>
+<a href="https://github.com/sirpdboy/luci-theme-opentopd/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/sirpdboy/luci-theme-opentopd/total"></a>
+</p>
+
 ![screenshots](https://raw.githubusercontent.com/sirpdboy/openwrt/master/doc/说明1.jpg)
 
 [luci-theme-opentopd  thme openwrt主题](https://github.com/sirpdboy/luci-theme-opentopd)
