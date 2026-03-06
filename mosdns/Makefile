@@ -5,12 +5,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mosdns
-PKG_VERSION:=5.2.0
+PKG_VERSION:=5.3.4
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/IrineSistiana/mosdns/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+PKG_HASH:=0302a685db2a6c3c09af7bf4ff0dffd24f1e583383a47f064564f5270033671b
 
 PKG_LICENSE:=GPL-3.0
 PKG_LICENSE_FILE:=LICENSE
