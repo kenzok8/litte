@@ -1,0 +1,46 @@
+name: Debug plugins build
+
+on:
+  workflow_dispatch:
+    inputs:
+      plugins:
+        description: '输入要编译的插件名，空格分隔'
+        required: true
+        default: ''
+      arch:
+        description: '架构'
+        required: true
+        default: 'x86_64'
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    name: debug build ${{ github.event.inputs.arch }}-24.10.2
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+        with:
+          fetch-depth: 0
+
+      - name: Build (strict)
+        uses: kenzok8/gh-action-sdk@hash
+        env:
+          ARCH: ${{ github.event.inputs.arch }}-24.10.2
+          FEEDNAME: packages_ci
+          PACKAGES: ${{ github.event.inputs.plugins }}
+          NO_REFRESH_CHECK: true
+          IGNORE_ERRORS: false
+
+      - name: Store packages
+        if: always()
+        uses: actions/upload-artifact@main
+        with:
+          name: debug-${{ github.event.inputs.arch }}
+          path: |
+            bin/packages/${{ github.event.inputs.arch }}/packages_ci/*.ipk
+            logs/**
+            *.log
+            **/*.log
+          if-no-files-found: ignore
