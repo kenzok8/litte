@@ -1,0 +1,57 @@
+name: Simple-obfs matrix build
+
+on:
+  workflow_dispatch:
+    inputs:
+      arches:
+        description: '逗号分隔架构，例如: x86_64,aarch64_cortex-a53'
+        required: true
+        default: 'x86_64,aarch64_cortex-a53'
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  prep:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.mk.outputs.matrix }}
+    steps:
+      - id: mk
+        shell: bash
+        run: |
+          IFS=',' read -ra ARR <<< "${{ github.event.inputs.arches }}"
+          JSON=$(printf '%s\n' "${ARR[@]}" | sed '/^$/d' | jq -R . | jq -cs '{arch: .}')
+          echo "matrix=$JSON" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: prep
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prep.outputs.matrix) }}
+    name: simple-obfs ${{ matrix.arch }}-24.10.2
+    steps:
+      - uses: actions/checkout@main
+        with:
+          fetch-depth: 0
+
+      - name: Build simple-obfs (strict)
+        uses: kenzok8/gh-action-sdk@hash
+        env:
+          ARCH: ${{ matrix.arch }}-24.10.2
+          FEEDNAME: packages_ci
+          PACKAGES: simple-obfs
+          NO_REFRESH_CHECK: true
+          IGNORE_ERRORS: false
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@main
+        with:
+          name: simple-obfs-${{ matrix.arch }}
+          path: |
+            bin/packages/${{ matrix.arch }}/packages_ci/simple-obfs*.ipk
+            logs/package/feeds/packages_ci/simple-obfs/**
+            logs/package/error.txt
+          if-no-files-found: ignore
