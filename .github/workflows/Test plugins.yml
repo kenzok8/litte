@@ -84,4 +84,21 @@ jobs:
         if: steps.detect_ipk.outputs.has_ipk != 'true'
         run: |
           echo "Skip artifact/release upload because no ipk was produced."
-    
+      - name: Remove old Releases
+        env:
+          GH_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          REPO: ${{ github.repository }}
+          KEEP: "60"
+        run: |
+          set -euo pipefail
+          mapfile -t tags < <(gh release list --repo "$REPO" --limit 200 --json tagName,createdAt --jq 'sort_by(.createdAt) | reverse | .[].tagName')
+          total=${#tags[@]}
+          if [ "$total" -le "$KEEP" ]; then
+            echo "No old releases to delete ($total <= $KEEP)"
+            exit 0
+          fi
+          for tag in "${tags[@]:$KEEP}"; do
+            echo "Deleting $tag"
+            gh release delete "$tag" --repo "$REPO" --yes --cleanup-tag || true
+          done
+
