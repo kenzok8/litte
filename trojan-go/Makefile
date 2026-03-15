@@ -5,12 +5,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=trojan-go
-PKG_VERSION:=0.10.6
+PKG_VERSION:=0.10.7
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://codeload.github.com/p4gefau1t/trojan-go/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=925f02647dda944813f1eab0b71eac98b83eb5964ef5a6f63e89bc7eb4486c1f
+PKG_SOURCE_URL:=https://codeload.github.com/kenzok8/trojan-go/tar.gz/v$(PKG_VERSION)?
+PKG_HASH:=3cccae00c26b06102e1d46d3109c71e77c39785dc7f019b11dee4f4b54209d9d
 
 PKG_LICENSE:=GPL-3.0-only
 PKG_LICENSE_FILES:=LICENSE
