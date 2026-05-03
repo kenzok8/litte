@@ -422,7 +422,9 @@ end
 
 function subscribe()
 	nixio.fs.remove(SERVER_DETECT_CACHE)
-	local ret = luci.sys.call(": > /var/log/ssrplus.log && /usr/bin/lua /usr/share/shadowsocksr/subscribe.lua >>/var/log/ssrplus.log 2>&1")
+	local sid = luci.http.formvalue("sid") or ""
+	local subscribe_arg = sid ~= "" and (" " .. luci.util.shellquote(sid)) or ""
+	local ret = luci.sys.call(": > /var/log/ssrplus.log && /usr/bin/lua /usr/share/shadowsocksr/subscribe.lua" .. subscribe_arg .. " >>/var/log/ssrplus.log 2>&1")
 	luci.http.prepare_content("application/json")
 	luci.http.write_json({ret = ret})
 end
