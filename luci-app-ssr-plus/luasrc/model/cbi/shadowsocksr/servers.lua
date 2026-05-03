@@ -259,6 +259,7 @@ uci:foreach("shadowsocksr", "servers", function(s)
 		ws_host = s.ws_host,
 		tls_host = s.tls_host,
 		tls = s.tls,
+		reality = s.reality,
 		clash_url = s.clash_url
 	}
 end)
@@ -469,12 +470,14 @@ o.render = function(self, section, scope)
 	local stype = cfg.type
 	self.type = stype or ""
 	self.proto = cfg.v2ray_protocol or ""
+	self.reality = cfg.reality or ""
 	if stype == "clash" then
 		self.transport = ""
 		self.ws_path = ""
 		self.ws_host = ""
 		self.tls_host = ""
 		self.tls = ""
+		self.reality = ""
 	else
 		self.transport = cfg.transport or ""
 		self.ws_host = cfg.ws_host or ""
