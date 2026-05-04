@@ -83,7 +83,6 @@ if [ -s "/etc/config/shadowsocksr" ]; then
 	    uci -q add shadowsocksr http_proxy
 	    uci -q set shadowsocksr.@http_proxy[0].server='nil'
 	    uci -q set shadowsocksr.@http_proxy[0].local_port='3128'
-	    uci -q set shadowsocksr.@http_proxy[0].socks_port='1081'
 	    uci -q set shadowsocksr.@http_proxy[0].http_auth='none'
 	fi
 

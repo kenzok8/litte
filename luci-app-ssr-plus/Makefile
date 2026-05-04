@@ -3,8 +3,8 @@ include $(TOPDIR)/rules.mk
 LUCI_TITLE:=luci-app-ssr-plus
 LUCI_PKGARCH:=all
 PKG_NAME:=luci-app-ssr-plus
-PKG_VERSION:=192
-PKG_RELEASE:=13
+PKG_VERSION:=193
+PKG_RELEASE:=1
 
 PKG_CONFIG_DEPENDS:= \
 	CONFIG_PACKAGE_$(PKG_NAME)_Iptables_Transparent_Proxy \
@@ -140,5 +140,39 @@ define Package/$(PKG_NAME)/conffiles
 endef
 
 include $(TOPDIR)/feeds/luci/luci.mk
+
+define Package/$(PKG_NAME)/install
+ ifneq ($(wildcard ${CURDIR}/luasrc),)
+	$(INSTALL_DIR) $(1)$(LUCI_LIBRARYDIR)
+	cp -pR $(PKG_BUILD_DIR)/luasrc/* $(1)$(LUCI_LIBRARYDIR)/
+	$(FIND) $(1)$(LUCI_LIBRARYDIR)/ -type f -name '*.luadoc' | $(XARGS) rm
+	$(if $(CONFIG_LUCI_SRCDIET),$(call SrcDiet,$(1)$(LUCI_LIBRARYDIR)/),true)
+	$(call SubstituteVersion,$(1)$(LUCI_LIBRARYDIR)/)
+ endif
+ ifneq ($(wildcard ${CURDIR}/ucode),)
+	  $(INSTALL_DIR) $(1)$(UCODE_LIBRARYDIR)
+	  cp -pR $(PKG_BUILD_DIR)/ucode/* $(1)$(UCODE_LIBRARYDIR)/
+	  $(call SubstituteVersion,$(1)$(UCODE_LIBRARYDIR)/)
+ endif
+ ifneq ($(wildcard ${CURDIR}/htdocs),)
+	$(INSTALL_DIR) $(1)$(HTDOCS)
+	cp -pR $(PKG_BUILD_DIR)/htdocs/* $(1)$(HTDOCS)/
+	$(if $(CONFIG_LUCI_JSMIN),$(call JsMin,$(1)$(HTDOCS)/),true)
+	$(if $(CONFIG_LUCI_CSSTIDY),$(call CssTidy,$(1)$(HTDOCS)/),true)
+ endif
+ ifneq ($(wildcard ${CURDIR}/root),)
+	$(INSTALL_DIR) $(1)/
+	cp -pR $(PKG_BUILD_DIR)/root/* $(1)/
+ endif
+ ifneq ($(wildcard ${CURDIR}/src),)
+	$(call Build/Install/Default)
+	$(CP) $(PKG_INSTALL_DIR)/* $(1)/
+ endif
+	if [ -d "$(1)/usr/bin" ]; then \
+		chmod 0755 "$(1)/usr/bin/ssr-monitor" 2>/dev/null || true; \
+		chmod 0755 "$(1)/usr/bin/ssr-rules" 2>/dev/null || true; \
+		chmod 0755 "$(1)/usr/bin/ssr-switch" 2>/dev/null || true; \
+	fi
+endef
 
 # call BuildPackage - OpenWrt buildroot signature

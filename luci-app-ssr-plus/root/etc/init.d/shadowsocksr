@@ -452,7 +452,7 @@ resolve_global_clash_socks_port() {
 	local socks_port=$(uci_get_by_type socks5_proxy local_port 1080)
 	local http_enabled=$(uci_get_by_type http_proxy enabled 0)
 	local http_server=$(uci_get_by_type http_proxy server nil)
-	local http_port=$(uci_get_by_type http_proxy socks_port 1081)
+	local http_port="$socks_port"
 	local resolved_port=""
 
 	[ "$socks_server" = "same" ] && socks_server="$GLOBAL_SERVER"
@@ -471,6 +471,28 @@ resolve_global_clash_socks_port() {
 	fi
 
 	echo "$resolved_port"
+}
+
+supports_builtin_socks() {
+	case "$1" in
+	ss|clash|tuic|v2ray)
+		return 0
+		;;
+	*)
+		return 1
+		;;
+	esac
+}
+
+supports_builtin_http() {
+	case "$1" in
+	clash)
+		return 0
+		;;
+	*)
+		return 1
+		;;
+	esac
 }
 
 get_host_ip() {
@@ -1003,18 +1025,16 @@ start_local() {
 	case "$type" in
 	ss | ssr)
 		if [ "$local_server_type" = "ss" ]; then
-			if [ "$_local" == "2" ]; then
-				local mihomo_bin="$(first_type mihomo)"
-				local instance_key="${LOCAL_SERVER}-local"
-				[ -x "$mihomo_bin" ] || {
-					echolog "Global_Socks5:Mihomo 内核不存在，请确认 /usr/bin/mihomo 或 /usr/libexec/mihomo 可执行。"
-					return 1
-				}
-				prepare_ss_mihomo_runtime_config "$LOCAL_SERVER" "$local_port" "$local_port" "$instance_key" "socks" || return 1
-				local ss_workdir="$(get_ss_mihomo_workdir "$instance_key")"
-				ln_start_bin "$mihomo_bin" ss-local -d "$ss_workdir" -f "$ss_workdir/config.yaml"
-				echolog "Global_Socks5:Mihomo (Shadowsocks) Started!"
-			fi
+			local mihomo_bin="$(first_type mihomo)"
+			local instance_key="${LOCAL_SERVER}-local"
+			[ -x "$mihomo_bin" ] || {
+				echolog "Global_Socks5:Mihomo 内核不存在，请确认 /usr/bin/mihomo 或 /usr/libexec/mihomo 可执行。"
+				return 1
+			}
+			prepare_ss_mihomo_runtime_config "$LOCAL_SERVER" "$local_port" "$local_port" "$instance_key" "socks" || return 1
+			local ss_workdir="$(get_ss_mihomo_workdir "$instance_key")"
+			ln_start_bin "$mihomo_bin" ss-local -d "$ss_workdir" -f "$ss_workdir/config.yaml"
+			echolog "Global_Socks5:Mihomo (Shadowsocks) Started!"
 		else
 			gen_config_file $LOCAL_SERVER $type 4 $local_port
 			if [ "$local_server_type" = "ssr" ]; then
@@ -1047,18 +1067,16 @@ start_local() {
 		echolog "Global_Socks5:$($(first_type naive) --version | head -1) Started!"
 		;;
 	tuic)
-		if [ "$_local" == "2" ]; then
-			local mihomo_bin="$(first_type mihomo)"
-			local instance_key="${LOCAL_SERVER}-local"
-			[ -x "$mihomo_bin" ] || {
-				echolog "Global_Socks5:Mihomo 内核不存在，请确认 /usr/bin/mihomo 或 /usr/libexec/mihomo 可执行。"
-				return 1
-			}
-			prepare_tuic_runtime_config "$LOCAL_SERVER" "$local_port" "$local_port" "$instance_key" "socks" || return 1
-			local tuic_workdir="$(get_tuic_workdir "$instance_key")"
-			ln_start_bin "$mihomo_bin" tuic-local -d "$tuic_workdir" -f "$tuic_workdir/config.yaml"
-			echolog "Global_Socks5:Mihomo (TUIC) Started!"
-		fi
+		local mihomo_bin="$(first_type mihomo)"
+		local instance_key="${LOCAL_SERVER}-local"
+		[ -x "$mihomo_bin" ] || {
+			echolog "Global_Socks5:Mihomo 内核不存在，请确认 /usr/bin/mihomo 或 /usr/libexec/mihomo 可执行。"
+			return 1
+		}
+		prepare_tuic_runtime_config "$LOCAL_SERVER" "$local_port" "$local_port" "$instance_key" "socks" || return 1
+		local tuic_workdir="$(get_tuic_workdir "$instance_key")"
+		ln_start_bin "$mihomo_bin" tuic-local -d "$tuic_workdir" -f "$tuic_workdir/config.yaml"
+		echolog "Global_Socks5:Mihomo (TUIC) Started!"
 		;;
 		clash)
 			echolog "Global_Socks5:Clash total node is only supported when using Same as Global Server."
@@ -1127,7 +1145,6 @@ start_http_proxy() {
 	[ "$HTTP_SERVER" = "nil" ] && return 1
 
 	local http_local_port=$(uci_get_by_type http_proxy local_port 3128)
-	local http_socks_port=$(uci_get_by_type http_proxy socks_port 1081)
 	local http_auth_mode=$(uci_get_by_type http_proxy http_auth none)
 	local http_user=$(uci_get_by_type http_proxy http_user)
 	local http_pass=$(uci_get_by_type http_proxy http_pass)
@@ -1142,6 +1159,11 @@ start_http_proxy() {
 	local global_socks_port=$(uci_get_by_type socks5_proxy local_port 1080)
 	local global_socks_server=$(uci_get_by_type socks5_proxy server nil)
 	local resolved_socks_server="$global_socks_server"
+	local http_socks_port="$global_socks_port"
+
+	if [ -z "$http_socks_port" ] || [ "$http_socks_port" = "0" ]; then
+		http_socks_port=1080
+	fi
 
 	[ "$http_local_port" = "$http_socks_port" ] && {
 		echolog "Global_HTTP: HTTP 监听端口与上游 SOCKS5 端口不能相同。"
@@ -1180,7 +1202,7 @@ start_http_proxy() {
 		fi
 	fi
 
-	if [ "$http_server_type" = "clash" ]; then
+	if supports_builtin_http "$http_server_type" && [ "$HTTP_SERVER" = "$GLOBAL_SERVER" ]; then
 		need_local_start=0
 	elif [ "$global_socks_enabled" = "1" ] && [ "$resolved_socks_server" = "$HTTP_SERVER" ] && [ "$global_socks_port" = "$http_socks_port" ]; then
 		need_local_start=0
@@ -1375,6 +1397,17 @@ load_config() {
 		GLOBAL_SERVER=$switch_server
 	fi
 	if [ "$(uci_get_by_type socks5_proxy enabled 0)" == "1" ]; then
+		uci -q set "$NAME.@socks5_proxy[0].server=same"
+	else
+		uci -q set "$NAME.@socks5_proxy[0].server=nil"
+	fi
+	if [ "$(uci_get_by_type http_proxy enabled 0)" == "1" ]; then
+		uci -q set "$NAME.@http_proxy[0].server=same"
+	else
+		uci -q set "$NAME.@http_proxy[0].server=nil"
+	fi
+	uci -q commit "$NAME"
+	if [ "$(uci_get_by_type socks5_proxy enabled 0)" == "1" ]; then
 		# 只有开启 全局socks 才需要取值
 		LOCAL_SERVER=$(uci_get_by_type socks5_proxy server nil)
 	else
@@ -1428,7 +1461,7 @@ load_config() {
 			_local="1"
 			LOCAL_SERVER=$GLOBAL_SERVER
 			local_config_file=$TMP_PATH/tcp-udp-ssr-local.json
-			if [ "$(uci_get_by_name $GLOBAL_SERVER type)" != "clash" ] && [ "$(uci_get_by_name $GLOBAL_SERVER type)" != "tuic" ] && [ "$(uci_get_by_name $GLOBAL_SERVER type)" != "ss" ]; then
+			if ! supports_builtin_socks "$(uci_get_by_name $GLOBAL_SERVER type)"; then
 				start_local
 			fi
 			local_enable=0
