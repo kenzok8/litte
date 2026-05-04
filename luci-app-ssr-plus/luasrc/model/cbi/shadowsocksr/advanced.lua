@@ -149,7 +149,7 @@ end
 -- [[ SOCKS5 Proxy ]]--
 s = m:section(TypedSection, "socks5_proxy", translate("Global SOCKS5 Proxy Server"))
 s.anonymous = true
-s.description = translate("Clash can be reused only in the Same as Global Server scenario. Use Xray Socks for generic Socks outbound.")
+s.description = translate("Clash can be reused only in the Same as Global Server scenario. For generic SOCKS outbound, please use an Xray Socks node.")
 
 -- Enable/Disable Option
 o = s:option(Flag, "enabled", translate("Enable"))
@@ -240,7 +240,7 @@ if is_finded("3proxy") then
 	-- [[ HTTP/HTTPS Proxy ]]--
 	s = m:section(TypedSection, "http_proxy", translate("Global HTTP/HTTPS Proxy Server"))
 	s.anonymous = true
-	s.description = translate("Lightweight Socks5 transparent proxy nodes are not available here. Clash is supported only when reusing Same as Global Server.")
+	s.description = translate("Lightweight Socks5 transparent proxy nodes are not available here. Clash can be reused only in the Same as Global Server scenario. For generic SOCKS outbound, please use an Xray Socks node.")
 
 	o = s:option(Flag, "enabled", translate("Enable"))
 	o.default = 0

@@ -4,30 +4,21 @@ LUCI_TITLE:=luci-app-ssr-plus
 LUCI_PKGARCH:=all
 PKG_NAME:=luci-app-ssr-plus
 PKG_VERSION:=192
-PKG_RELEASE:=10
+PKG_RELEASE:=13
 
 PKG_CONFIG_DEPENDS:= \
 	CONFIG_PACKAGE_$(PKG_NAME)_Iptables_Transparent_Proxy \
 	CONFIG_PACKAGE_$(PKG_NAME)_Nftables_Transparent_Proxy \
 	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_NONE_V2RAY \
 	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Xray \
-	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_ChinaDNS_NG \
 	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_DNS2TCP \
 	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_MosDNS \
-	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Hysteria \
 	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Http_Proxy \
 	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Mihomo \
-	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Shadow_TLS \
-	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Kcptun \
 	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_NaiveProxy \
 	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_NONE_Client \
-	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Libev_Client \
-	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Rust_Client \
+	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Mihomo_Client \
 	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_NONE_Server \
-	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Libev_Server \
-	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Rust_Server \
-	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Simple_Obfs \
-	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_V2ray_Plugin \
 	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_Libev_Client \
 	CONFIG_PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_Libev_Server
 
@@ -36,20 +27,9 @@ LUCI_PKGARCH:=all
 LUCI_DEPENDS:= \
 	+libuci-lua +lua +luci-compat +coreutils +coreutils-base64 +dns2tcp +dnsmasq-full \
 	+jq +ip-full +lua-neturl +libuci-lua +microsocks +ipt2socks \
-	+resolveip +shadowsocksr-libev-ssr-check +curl +nping +unzip +xz-utils \
-	+PACKAGE_$(PKG_NAME)_INCLUDE_ChinaDNS_NG:chinadns-ng \
+	+resolveip +curl +nping +unzip +xz-utils \
 	+PACKAGE_$(PKG_NAME)_INCLUDE_MosDNS:mosdns \
-	+PACKAGE_$(PKG_NAME)_INCLUDE_Hysteria:hysteria \
-	+PACKAGE_$(PKG_NAME)_INCLUDE_Shadow_TLS:shadow-tls \
-	+PACKAGE_$(PKG_NAME)_INCLUDE_Kcptun:kcptun-client \
 	+PACKAGE_$(PKG_NAME)_INCLUDE_NaiveProxy:naiveproxy \
-	+PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Libev_Client:shadowsocks-libev-ss-local \
-	+PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Libev_Client:shadowsocks-libev-ss-redir \
-	+PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Libev_Server:shadowsocks-libev-ss-server \
-	+PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Rust_Client:shadowsocks-rust-sslocal \
-	+PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Rust_Server:shadowsocks-rust-ssserver \
-	+PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Simple_Obfs:simple-obfs-client \
-	+PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_V2ray_Plugin:v2ray-plugin \
 	+PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_Libev_Client:shadowsocksr-libev-ssr-local \
 	+PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_Libev_Client:shadowsocksr-libev-ssr-redir \
 	+PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_Libev_Server:shadowsocksr-libev-ssr-server
@@ -85,19 +65,14 @@ endchoice
 
 choice
 	prompt "Shadowsocks Client Selection"
-	default PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Rust_Client if aarch64 || loongarch64 || x86_64
-	default PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Libev_Client
+	default PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Mihomo_Client if aarch64||arm||i386||loongarch64||riscv64||x86_64
+	default PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_NONE_Client
 
 	config PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_NONE_Client
 	bool "None"
 
-	config PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Libev_Client
-	bool "Shadowsocks-libev"
-
-	config PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Rust_Client
-	bool "Shadowsocks-rust"
-	depends on aarch64||arm||i386||loongarch64||riscv64||x86_64
-	depends on !(TARGET_x86_geode||TARGET_x86_legacy)
+	config PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Mihomo_Client
+	bool "Mihomo"
 endchoice
 
 choice
@@ -106,14 +81,6 @@ choice
 
 	config PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_NONE_Server
 	bool "None"
-
-	config PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Libev_Server
-	bool "Shadowsocks-libev"
-
-	config PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Rust_Server
-	bool "Shadowsocks-rust"
-	depends on aarch64||arm||i386||loongarch64||riscv64||x86_64
-	depends on !(TARGET_x86_geode||TARGET_x86_legacy)
 endchoice
 
 choice
@@ -129,21 +96,12 @@ choice
 	select PACKAGE_xray-core
 endchoice
 
-config PACKAGE_$(PKG_NAME)_INCLUDE_ChinaDNS_NG
-	bool "Include ChinaDNS-NG"
-	default n
-
 config PACKAGE_$(PKG_NAME)_INCLUDE_MosDNS
 	bool "Include MosDNS"
 	default y if aarch64||arm||i386||x86_64
 
-config PACKAGE_$(PKG_NAME)_INCLUDE_Hysteria
-	bool "Include Hysteria"
-	select PACKAGE_$(PKG_NAME)_INCLUDE_ChinaDNS_NG
-	default n
-
 config PACKAGE_$(PKG_NAME)_INCLUDE_Http_Proxy
-	bool "Include HTTP Proxy"
+	bool "Include HTTP(S) Proxy Server"
 	select PACKAGE_3proxy
 	default n
 
@@ -160,29 +118,9 @@ config PACKAGE_$(PKG_NAME)_INCLUDE_GeoData
 	select PACKAGE_v2ray-geosite
 	default y if i386||x86_64
 
-config PACKAGE_$(PKG_NAME)_INCLUDE_Shadow_TLS
-	bool "Include Shadow-TLS"
-	select PACKAGE_$(PKG_NAME)_INCLUDE_ChinaDNS_NG
-	select PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Rust_Client
-	depends on aarch64||arm||x86_64
-	depends on !(TARGET_x86_geode||TARGET_x86_legacy)
-	default n
-
-config PACKAGE_$(PKG_NAME)_INCLUDE_Kcptun
-	bool "Include Kcptun"
-	default n
-
 config PACKAGE_$(PKG_NAME)_INCLUDE_NaiveProxy
 	bool "Include NaiveProxy"
 	depends on !(arc||armeb||mips||mips64||powerpc||TARGET_gemini)
-	default n
-
-config PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_Simple_Obfs
-	bool "Include Shadowsocks Simple Obfs Plugin"
-	default y
-
-config PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_V2ray_Plugin
-	bool "Include Shadowsocks V2ray Plugin"
 	default n
 
 config PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_Libev_Client
