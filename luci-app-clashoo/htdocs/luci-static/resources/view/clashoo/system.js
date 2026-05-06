@@ -50,10 +50,6 @@ var CSS = [
   '.cl-log-tabs{display:flex;gap:8px;margin-bottom:8px}',
   '.cl-log-tab{padding:4px 12px;border:1px solid rgba(128,128,128,.2);border-radius:20px;font-size:12px;cursor:pointer;opacity:.6}',
   '.cl-log-tab.active{opacity:1;font-weight:600;background:rgba(128,128,128,.1)}',
-  '.cl-core-download-box{display:flex;flex-direction:column;align-items:flex-start;gap:8px}',
-  '.cl-core-download-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}',
-  '.cl-core-download-log{font-family:monospace;font-size:11px;line-height:1.45;white-space:pre-wrap;max-width:min(720px,100%);padding:8px 10px;border:1px solid rgba(128,128,128,.18);border-radius:8px;background:rgba(128,128,128,.06);color:rgba(74,86,106,.82)}',
-  '.cl-theme-dark .cl-core-download-log{color:rgba(208,219,238,.82);background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12)}',
   /* 统一 form.Map 字体大小与 config 页一致 */
   '.cl-panel .cbi-section>h3{font-size:13px !important;font-weight:600;margin-bottom:8px}',
   '.cl-panel .cbi-value-title{font-size:13px !important}',
@@ -262,7 +258,7 @@ return view.extend({
 
     var kernelPanel = E('div', { 'class': 'cl-panel' + (this._tab === 'kernel' ? ' active' : ''), id: 'cl-panel-kernel' });
     panelEls['kernel'] = kernelPanel;
-    this._buildKernelPanel(kernelPanel, cpuArch, logStatus);
+    this._buildKernelPanel(kernelPanel, cpuArch);
 
     var rulesPanel = E('div', { 'class': 'cl-panel' + (this._tab === 'rules' ? ' active' : ''), id: 'cl-panel-rules' });
     panelEls['rules'] = rulesPanel;
@@ -295,7 +291,7 @@ return view.extend({
     return '';
   },
 
-  _buildKernelPanel: function (container, cpuArch, logStatus) {
+  _buildKernelPanel: function (container, cpuArch) {
     var self = this;
     var detectedArch = this._detectMihomoArch(cpuArch);
     var m = new form.Map('clashoo', '', '');
@@ -333,85 +329,31 @@ return view.extend({
     o.value('', 'GitHub 直连'); o.value('https://gh-proxy.com/', 'GHProxy');
     o = s.option(form.DummyValue, '_dl_btn', '');
     o.cfgvalue = function () {
-      var initialLog = (logStatus && logStatus.core_log) || '';
-      var initialRunning = !!(logStatus && logStatus.core_updating);
-      var dlStatus = E('span', { 'class': 'cl-ver-tag' }, initialRunning ? '内核下载进行中…' : '');
-      var dlLog = E('div', {
-        'class': 'cl-core-download-log',
-        style: (initialRunning || initialLog) ? '' : 'display:none'
-      }, initialLog || '正在等待下载日志…');
-      var viewLogBtn = E('button', {
-        'class': 'btn cbi-button',
-        style: (initialRunning || initialLog) ? '' : 'display:none',
-        click: function (ev) {
-          ev.preventDefault();
-          self._switchTab('logs');
-          if (self._activateLogTab) self._activateLogTab('update');
-        }
-      }, '查看完整日志');
-
-      var stopPolling = function () {
-        if (self._coreDownloadTimer) {
-          clearInterval(self._coreDownloadTimer);
-          self._coreDownloadTimer = null;
-        }
-      };
-      var updateInlineLog = function (text, fallback) {
-        dlLog.style.display = '';
-        viewLogBtn.style.display = '';
-        dlLog.textContent = (text && text.trim()) ? text : fallback;
-      };
-      var pollDownload = function () {
-        return clashoo.getLogStatus().then(function (st) {
-          var log = (st && st.core_log) || '';
-          var running = !!(st && st.core_updating);
-          updateInlineLog(log, running ? '下载任务已提交，正在获取日志…' : '下载任务已结束，请查看完整日志。');
-          dlStatus.textContent = running ? '内核下载进行中…' : '内核下载任务已结束';
-          dlBtn.disabled = running;
-          if (!running) stopPolling();
-        }).catch(function () {});
-      };
-      var startPolling = function () {
-        stopPolling();
-        pollDownload();
-        self._coreDownloadTimer = setInterval(pollDownload, 1500);
-      };
-      if (initialRunning) {
-        setTimeout(startPolling, 0);
-      }
-      var dlResult = null;
+      var dlStatus = E('span', { 'class': 'cl-ver-tag' }, '');
       var dlBtn = E('button', {
         'class': 'btn cbi-button-action',
         click: function () {
           dlBtn.disabled = true;
           dlStatus.textContent = '正在启动下载任务…';
-          updateInlineLog('', '正在提交内核下载任务…');
           m.save()
             .then(function () { return clashoo.commitConfig(); })
             .then(function () { return clashoo.clearUpdateLog(); })
-            .then(function () {
-              return clashoo.downloadCore().then(function (r) {
-                dlResult = r || {};
-              });
-            })
+            .then(function () { return clashoo.downloadCore(); })
             .then(function () { return clearClashooDirty(); })
             .then(function () {
-              dlStatus.textContent = dlResult && dlResult.running ? '已有内核下载任务正在运行…' : '下载已启动，正在获取版本信息…';
-              startPolling();
+              dlBtn.disabled = false;
+              dlStatus.textContent = '下载已启动，正在跳转日志…';
+              self._switchTab('logs');
+              if (self._activateLogTab) self._activateLogTab('update');
             })
             .catch(function (e) {
               dlBtn.disabled = false;
               dlStatus.textContent = '';
-              dlLog.style.display = 'none';
-              viewLogBtn.style.display = 'none';
               ui.addNotification(null, E('p', '启动下载失败: ' + (e.message || e)));
             });
         }
       }, '下载内核');
-      return E('div', { 'class': 'cl-core-download-box' }, [
-        E('div', { 'class': 'cl-core-download-row' }, [dlBtn, dlStatus, viewLogBtn]),
-        dlLog
-      ]);
+      return E('div', { 'class': 'cl-btn-ver-wrap' }, [dlBtn, dlStatus]);
     };
     o.write = function () {};
 
