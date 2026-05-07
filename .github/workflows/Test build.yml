@@ -17,6 +17,7 @@ jobs:
       matrix:
         sdk:
           - 24.10.4
+          - 25.12.0
         arch:
           - aarch64_cortex-a53
           - aarch64_cortex-a72
@@ -41,6 +42,9 @@ jobs:
           - mipsel_74kc
           - mipsel_mips32
           - x86_64
+        exclude:
+          - sdk: 25.12.0
+            arch: mips_4kec
 
     steps:
       - uses: actions/checkout@v6.0.2
@@ -85,16 +89,28 @@ jobs:
           PACKAGES: ${{ steps.packages.outputs.packages }}
           NO_REFRESH_CHECK: true
           IGNORE_ERRORS: true
+          INDEX: 1
 
       - name: Store packages
         uses: actions/upload-artifact@v7.0.0
         with:
           name: ${{ matrix.arch }}-${{ matrix.sdk }}
-          path: bin/packages/${{ matrix.arch }}/packages_ci/*.ipk
+          path: |
+            bin/packages/${{ matrix.arch }}/packages_ci/*.ipk
+            bin/packages/${{ matrix.arch }}/packages_ci/*.apk
 
       - name: Zip packages
         run: |
-          tar -zcvf ${{ matrix.arch }}-${{ matrix.sdk }}.tar.gz bin/packages/${{ matrix.arch }}/packages_ci/*.ipk
+          shopt -s nullglob
+          packages=(bin/packages/${{ matrix.arch }}/packages_ci/*.ipk bin/packages/${{ matrix.arch }}/packages_ci/*.apk)
+          if [ "${#packages[@]}" -eq 0 ]; then
+            echo "No packages found"
+            exit 1
+          fi
+          tar -zcvf ${{ matrix.arch }}-${{ matrix.sdk }}.tar.gz "${packages[@]}"
+          mkdir -p release-assets
+          cp "${packages[@]}" release-assets/
+          cp ${{ matrix.arch }}-${{ matrix.sdk }}.tar.gz release-assets/
           echo -e "**文件说明** 🙈:\n" >> release.txt
           input="${{ github.event.inputs.plugins }}"
           if [ -z "$input" ] || [ "$input" == "*" ]; then
@@ -106,18 +122,19 @@ jobs:
           else
             echo -e "1. 编译指定插件: $input\n" >> release.txt
           fi
-          echo -e "2. 使用方法:上传到openwrt设备的tmp目录，输入命令 \`opkg install *.ipk\`\n" >> release.txt
-          echo -e "3. 如果单独安装ssr与依赖，\`rm -rf {*passwall*,*bypass*}\`\n" >> release.txt
+          echo -e "2. OpenWrt 24.10 使用：\`opkg install *.ipk\`\n" >> release.txt
+          echo -e "3. OpenWrt 25.12 使用：\`apk add --allow-untrusted ./*.apk\`\n" >> release.txt
+          echo -e "4. 如果单独安装ssr与依赖，\`rm -rf {*passwall*,*bypass*}\`\n" >> release.txt
 
       - name: Upload packages
         uses: ncipollo/release-action@v1.21.0
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
-          artifacts: "${{ matrix.arch }}-${{ matrix.sdk }}.tar.gz,bin/packages/${{ matrix.arch }}/packages_ci/*.ipk"
+          artifacts: "release-assets/*"
           allowUpdates: true
           replacesArtifacts: true
           bodyFile: "release.txt"
-          tag: ${{ github.run_number }}-${{ matrix.arch }}
+          tag: ${{ github.run_number }}-${{ matrix.arch }}-${{ matrix.sdk }}
       - name: Remove old Releases
         env:
           GH_TOKEN: ${{ secrets.ACCESS_TOKEN }}

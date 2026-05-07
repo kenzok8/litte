@@ -11,10 +11,14 @@ on:
         description: '架构'
         required: true
         default: 'x86_64'
+      sdk:
+        description: 'SDK 版本'
+        required: true
+        default: '24.10.4'
 
 jobs:
   build:
-    name: debug build ${{ github.event.inputs.arch }}-24.10.4
+    name: debug build ${{ github.event.inputs.arch }}-${{ github.event.inputs.sdk }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.2
@@ -24,19 +28,21 @@ jobs:
       - name: Build (strict)
         uses: kenzok8/gh-action-sdk@hash
         env:
-          ARCH: ${{ github.event.inputs.arch }}-24.10.4
+          ARCH: ${{ github.event.inputs.arch }}-${{ github.event.inputs.sdk }}
           FEEDNAME: packages_ci
           PACKAGES: ${{ github.event.inputs.plugins }}
           NO_REFRESH_CHECK: true
           IGNORE_ERRORS: false
+          INDEX: 1
 
       - name: Store packages
         if: always()
         uses: actions/upload-artifact@v7.0.0
         with:
-          name: debug-${{ github.event.inputs.arch }}
+          name: debug-${{ github.event.inputs.arch }}-${{ github.event.inputs.sdk }}
           path: |
             bin/packages/${{ github.event.inputs.arch }}/packages_ci/*.ipk
+            bin/packages/${{ github.event.inputs.arch }}/packages_ci/*.apk
             logs/**
             *.log
             **/*.log

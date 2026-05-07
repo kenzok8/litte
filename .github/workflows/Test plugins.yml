@@ -17,6 +17,7 @@ jobs:
       matrix:
         sdk:
           - 24.10.4
+          - 25.12.0
         arch:
           - aarch64_cortex-a53
           - x86_64
@@ -64,53 +65,62 @@ jobs:
           PACKAGES: ${{ steps.packages.outputs.packages }}
           NO_REFRESH_CHECK: true
           IGNORE_ERRORS: true
+          INDEX: 1
 
-      - name: Detect built ipk files
-        id: detect_ipk
+      - name: Detect built package files
+        id: detect_packages
         run: |
           shopt -s nullglob
-          files=(bin/packages/${{ matrix.arch }}/packages_ci/*.ipk)
+          files=(bin/packages/${{ matrix.arch }}/packages_ci/*.ipk bin/packages/${{ matrix.arch }}/packages_ci/*.apk)
           if [ ${#files[@]} -gt 0 ]; then
-            echo "has_ipk=true" >> $GITHUB_OUTPUT
+            echo "has_packages=true" >> $GITHUB_OUTPUT
             printf '%s\n' "${files[@]}"
           else
-            echo "has_ipk=false" >> $GITHUB_OUTPUT
-            echo "No ipk output found for: ${{ github.event.inputs.plugins }}"
-            echo "Host-only packages (for example gn) are expected to have no ipk artifacts."
+            echo "has_packages=false" >> $GITHUB_OUTPUT
+            echo "No ipk/apk output found for: ${{ github.event.inputs.plugins }}"
+            echo "Host-only packages (for example gn) are expected to have no package artifacts."
           fi
 
       - name: Store packages
-        if: steps.detect_ipk.outputs.has_ipk == 'true'
+        if: steps.detect_packages.outputs.has_packages == 'true'
         uses: actions/upload-artifact@v7.0.0
         with:
           name: ${{ matrix.arch }}-${{ matrix.sdk }}
-          path: bin/packages/${{ matrix.arch }}/packages_ci/*.ipk
+          path: |
+            bin/packages/${{ matrix.arch }}/packages_ci/*.ipk
+            bin/packages/${{ matrix.arch }}/packages_ci/*.apk
 
       - name: Zip packages
-        if: steps.detect_ipk.outputs.has_ipk == 'true'
+        if: steps.detect_packages.outputs.has_packages == 'true'
         run: |
-          tar -zcvf ${{ matrix.arch }}-${{ matrix.sdk }}.tar.gz bin/packages/${{ matrix.arch }}/packages_ci/*.ipk
+          shopt -s nullglob
+          packages=(bin/packages/${{ matrix.arch }}/packages_ci/*.ipk bin/packages/${{ matrix.arch }}/packages_ci/*.apk)
+          tar -zcvf ${{ matrix.arch }}-${{ matrix.sdk }}.tar.gz "${packages[@]}"
+          mkdir -p release-assets
+          cp "${packages[@]}" release-assets/
+          cp ${{ matrix.arch }}-${{ matrix.sdk }}.tar.gz release-assets/
           echo -e "**文件说明** 🙈:\n" >> release.txt
           echo -e "1. 支持编译单个或者多个插件\n" >> release.txt
           echo -e "2. 手动启动编译:${{ github.event.inputs.plugins }}\n" >> release.txt
-          echo -e "3. 使用方法:上传到openwrt设备的tmp目录，输入命令 \`opkg install *.ipk\`\n" >> release.txt
-          echo -e "4. 如果单独安装ssr与依赖，\`rm -rf {*passwall*,*bypass*}\`\n" >> release.txt
+          echo -e "3. OpenWrt 24.10 使用：\`opkg install *.ipk\`\n" >> release.txt
+          echo -e "4. OpenWrt 25.12 使用：\`apk add --allow-untrusted ./*.apk\`\n" >> release.txt
+          echo -e "5. 如果单独安装ssr与依赖，\`rm -rf {*passwall*,*bypass*}\`\n" >> release.txt
 
       - name: Upload packages
-        if: steps.detect_ipk.outputs.has_ipk == 'true'
+        if: steps.detect_packages.outputs.has_packages == 'true'
         uses: ncipollo/release-action@v1.21.0
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
-          artifacts: "${{ matrix.arch }}-${{ matrix.sdk }}.tar.gz,bin/packages/${{ matrix.arch }}/packages_ci/*.ipk"
+          artifacts: "release-assets/*"
           allowUpdates: true
           replacesArtifacts: true
           bodyFile: "release.txt"
-          tag: ${{ github.run_number }}-${{ matrix.arch }}
+          tag: ${{ github.run_number }}-${{ matrix.arch }}-${{ matrix.sdk }}
 
       - name: Skip release for host-only packages
-        if: steps.detect_ipk.outputs.has_ipk != 'true'
+        if: steps.detect_packages.outputs.has_packages != 'true'
         run: |
-          echo "Skip artifact/release upload because no ipk was produced."
+          echo "Skip artifact/release upload because no ipk/apk was produced."
       - name: Remove old Releases
         env:
           GH_TOKEN: ${{ secrets.ACCESS_TOKEN }}
