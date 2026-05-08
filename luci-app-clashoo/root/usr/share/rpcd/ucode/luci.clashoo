@@ -576,7 +576,7 @@ return updated <= 0 || (updated + ACCESS_CACHE_TTL) < now;
 }
 
 function trigger_access_cache_refresh() {
-system('sh /usr/share/clashoo/net/access_check_cache.sh >/dev/null 2>&1 &');
+system('nice -n 19 sh /usr/share/clashoo/net/access_check_cache.sh >/dev/null 2>&1 &');
 }
 
 function access_check_daemon_running() {
@@ -588,7 +588,7 @@ return !!access('/proc/' + pid, 'r');
 
 function ensure_access_check_daemon() {
 if (access_check_daemon_running()) return true;
-system('nohup sh /usr/share/clashoo/net/access_check_daemon.sh >/dev/null 2>&1 </dev/null &');
+system('nohup nice -n 19 sh /usr/share/clashoo/net/access_check_daemon.sh >/dev/null 2>&1 </dev/null &');
 return true;
 }
 
@@ -1459,6 +1459,28 @@ sync_legacy_core_fields(c);
 c.commit('clashoo');
 let rc = system('uci commit clashoo >/dev/null 2>&1');
 return { success: rc === 0 };
+}
+},
+
+dns_auto_setup: {
+call: function() {
+let running = is_running();
+let p = popen('sh /usr/share/clashoo/net/dns_auto_setup.sh --apply 2>/dev/null');
+if (!p) return { success: false, message: 'DNS 自动配置启动失败' };
+let raw = trim(p.read('all') || '');
+p.close();
+let res = null;
+try {
+	res = raw ? json(raw) : null;
+} catch (e) {}
+if (!res || !res.success)
+return res || { success: false, message: 'DNS 自动配置失败' };
+res.restarted = false;
+if (running) {
+	system('sh /usr/share/clashoo/rpc/rpc_async.sh restart >/dev/null 2>&1');
+	res.restarted = true;
+}
+return res;
 }
 },
 
