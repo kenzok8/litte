@@ -46,7 +46,8 @@ const SINGBOX_DIR = '/usr/share/clashoo/config/singbox';
 const ACCESS_CACHE_FILE = '/tmp/clashoo_check_cache';
 const ACCESS_UPDATING_FLAG = '/tmp/clashoo/access_check_updating';
 const ACCESS_DAEMON_PID_FILE = '/tmp/clashoo/access_check_daemon.pid';
-const ACCESS_CACHE_TTL = 90;
+const ACCESS_CACHE_TTL = 30;
+const ACCESS_UPDATING_TTL = 60;
 const OVERVIEW_STATS_CACHE_FILE = '/tmp/clashoo_overview_stats_cache.json';
 
 function uci_get(pkg, sec, opt) {
@@ -579,6 +580,17 @@ function trigger_access_cache_refresh() {
 system('nice -n 19 sh /usr/share/clashoo/net/access_check_cache.sh >/dev/null 2>&1 &');
 }
 
+function access_check_is_updating(now) {
+if (!access(ACCESS_UPDATING_FLAG, 'r')) return false;
+let st = stat(ACCESS_UPDATING_FLAG);
+let mtime = st ? int(st.mtime || 0) : 0;
+if (mtime > 0 && now > 0 && (mtime + ACCESS_UPDATING_TTL) < now) {
+unlink(ACCESS_UPDATING_FLAG);
+return false;
+}
+return true;
+}
+
 function access_check_daemon_running() {
 if (!access(ACCESS_DAEMON_PID_FILE, 'r')) return false;
 let pid = trim(readfile(ACCESS_DAEMON_PID_FILE) || '');
@@ -972,7 +984,7 @@ ensure_access_check_daemon();
 let now = now_epoch_sec();
 let cache = read_access_check_cache();
 let stale = access_cache_is_stale(cache, now);
-let updating = !!access(ACCESS_UPDATING_FLAG, 'r');
+let updating = access_check_is_updating(now);
 
 if ((stale || !cache) && !updating) {
 trigger_access_cache_refresh();
@@ -1832,7 +1844,7 @@ return get_access_payload();
 access_check_refresh: {
 call: function() {
 ensure_access_check_daemon();
-let updating = !!access(ACCESS_UPDATING_FLAG, 'r');
+let updating = access_check_is_updating(now_epoch_sec());
 if (!updating)
 trigger_access_cache_refresh();
 return { success: true, started: !updating };
