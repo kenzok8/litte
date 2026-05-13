@@ -10,10 +10,16 @@ TMP_FILE="${CACHE_FILE}.tmp.$$"
 
 mkdir -p "$CACHE_DIR"
 if ! mkdir "$LOCK_DIR" 2>/dev/null; then
-	exit 0
+	old_pid="$(cat "$UPDATING_FLAG" 2>/dev/null)"
+	if [ -n "$old_pid" ] && [ ! -d "/proc/$old_pid" ]; then
+		rm -rf "$LOCK_DIR" "$UPDATING_FLAG" >/dev/null 2>&1
+		mkdir "$LOCK_DIR" 2>/dev/null || exit 0
+	else
+		exit 0
+	fi
 fi
 trap 'rm -rf "$LOCK_DIR" "$UPDATING_FLAG" "$TMP_FILE"' EXIT INT TERM
-touch "$UPDATING_FLAG"
+printf '%s\n' "$$" > "$UPDATING_FLAG"
 
 safe_int() {
 	case "${1:-}" in
