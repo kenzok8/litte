@@ -462,27 +462,73 @@ return view.extend({
     o = s.option(form.DummyValue, '_geo_btn', '');
     o.cfgvalue = function () {
       var verSpan = E('span', { 'class': 'cl-ver-tag' }, '');
-      clashoo.getGeoipVersion().then(function (r) {
-        if (r && r.version) {
-          verSpan.textContent = '';
-          verSpan.appendChild(E('span', { 'class': 'cl-ver-label' }, '当前版本: '));
-          verSpan.appendChild(E('span', { 'class': 'cl-ver-value' }, r.version));
+      function refreshVer() {
+        clashoo.getGeoipVersion().then(function (r) {
+          if (r && r.version) {
+            verSpan.textContent = '';
+            verSpan.appendChild(E('span', { 'class': 'cl-ver-label' }, '当前版本: '));
+            verSpan.appendChild(E('span', { 'class': 'cl-ver-value' }, r.version));
+          }
+        });
+      }
+      refreshVer();
+
+      var statusEl = E('div', { 'class': 'cl-update-status', style: 'margin-top:6px;font-size:12px;min-height:18px;line-height:1.4' });
+      var poller = null;
+      function stopPoller() { if (poller) { clearInterval(poller); poller = null; } }
+      function setStatus(text, tone) {
+        statusEl.textContent = text || '';
+        statusEl.style.color = tone === 'success' ? 'var(--success-color, #2e7d32)'
+                              : tone === 'error'   ? 'var(--error-color, #d32f2f)'
+                              : tone === 'progress'? 'var(--tip-color, #1976d2)'
+                              : '';
+      }
+      function pickLastLine(text) {
+        var lines = String(text || '').split('\n');
+        for (var i = lines.length - 1; i >= 0; i--) {
+          var t = lines[i].trim();
+          if (t) return t;
         }
-      });
+        return '';
+      }
+      function pollGeoStatus() {
+        clashoo.getLogStatus().then(function (st) {
+          st = st || {};
+          var rawLast = pickLastLine(st.geoip_log);
+          var last = clashoo.localizeLogLine(rawLast);
+          if (st.geoip_updating) {
+            setStatus('⏳ ' + (last || '正在下载 GeoIP / GeoSite...'), 'progress');
+            return;
+          }
+          stopPoller();
+          btn.disabled = false;
+          var ok = /success|complete|done|完成|成功|已更新/i.test(rawLast + ' ' + last);
+          setStatus((ok ? '✓ ' : 'ℹ ') + (last || (ok ? '更新成功' : '已结束')), ok ? 'success' : '');
+          refreshVer();
+          setTimeout(function () { setStatus(''); }, 8000);
+        });
+      }
+
       var btn = E('button', {
         'class': 'btn cbi-button',
         click: function () {
+          stopPoller();
           btn.disabled = true;
+          setStatus('⏳ 正在启动 GeoIP 更新...', 'progress');
           clashoo.updateGeoip().then(function () {
+            poller = setInterval(pollGeoStatus, 2000);
+            setTimeout(pollGeoStatus, 500);
+          }).catch(function () {
             btn.disabled = false;
-            ui.addNotification(null, E('p', 'GeoIP 更新任务已启动'));
-            self._switchTab('logs');
-            if (self._activateLogTab)
-              self._activateLogTab('update');
-          }).catch(function () { btn.disabled = false; });
+            setStatus('✗ 启动失败', 'error');
+            setTimeout(function () { setStatus(''); }, 5000);
+          });
         }
       }, '立即更新 GeoIP');
-      return E('div', { 'class': 'cl-btn-ver-row' }, [btn, verSpan]);
+      return E('div', {}, [
+        E('div', { 'class': 'cl-btn-ver-row' }, [btn, verSpan]),
+        statusEl
+      ]);
     };
     o.write = function () {};
 

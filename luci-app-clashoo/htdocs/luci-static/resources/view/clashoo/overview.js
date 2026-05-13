@@ -1409,6 +1409,12 @@ return view.extend({
         var ac = ov.access || {};
         var stats = ov.stats || {};
 
+        /* 服务未运行时立即把 proxy 探测项强制标 down，避免显示陈旧绿色（不等 daemon 5-20s 刷新） */
+        if (!st.running && ac && ac.proxy) {
+          var downProbe = { ok: false, state: 'down', code: '000', ok_count: 0, attempts: 1, loss: 1, avg_ms: 0 };
+          Object.keys(ac.proxy).forEach(function (k) { ac.proxy[k] = downProbe; });
+        }
+
         self._overviewLoaded = true;
         self._lastSt      = st;
         self._lastCfgData = cfgData;
