@@ -6,8 +6,7 @@
 			"type": "firstchild"
 		},
 		"depends": {
-			"acl": [ "luci-app-daed" ],
-			"uci": { "daed": true }
+			"acl": [ "luci-app-daed" ]
 		}
 	},
 	"admin/services/daed/config": {
@@ -18,9 +17,17 @@
 			"path": "daed/config"
 		}
 	},
+	"admin/services/daed/updates": {
+		"title": "Updates",
+		"order": 20,
+		"action": {
+			"type": "view",
+			"path": "daed/updates"
+		}
+	},
 	"admin/services/daed/log": {
 		"title": "Log",
-		"order": 20,
+		"order": 30,
 		"action": {
 			"type": "view",
 			"path": "daed/log"

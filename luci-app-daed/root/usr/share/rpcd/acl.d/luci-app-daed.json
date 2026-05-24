@@ -1,17 +1,67 @@
 {
 	"luci-app-daed": {
-		"description": "Grant access to daed configuration",
+		"description": "Grant access to dae/daed configuration",
 		"read": {
 			"file": {
-				"/var/log/daed/daed.log": [ "read" ]
+				"/etc/init.d/dae": [ "read" ],
+				"/etc/init.d/daed": [ "read" ],
+				"/etc/config/daed_luci": [ "read" ],
+				"/etc/dae/config.dae": [ "read" ],
+				"/etc/dae/example.dae": [ "read" ],
+				"/var/log/dae/dae.log": [ "read" ],
+				"/var/log/daed/daed.log": [ "read" ],
+				"/usr/share/v2ray/geoip.dat": [ "read" ],
+				"/usr/share/v2ray/geosite.dat": [ "read" ],
+				"/sys/kernel/btf/vmlinux": [ "read" ],
+				"/run/netns/daens": [ "read" ],
+				"/tmp/luci-app-daed.geoip.log": [ "read" ],
+				"/tmp/luci-app-daed.geosite.log": [ "read" ],
+				"/tmp/luci-app-daed.pkg-dae.log": [ "read" ],
+				"/tmp/luci-app-daed.pkg-daed.log": [ "read" ],
+				"/tmp/luci-app-daed.pkg-luci-app-daed.log": [ "read" ],
+				"/usr/bin/pgrep -x dae": [ "exec" ],
+				"/usr/bin/pgrep -x daed": [ "exec" ],
+				"/usr/share/luci-app-daed/pkg-info.sh dae": [ "exec" ],
+				"/usr/share/luci-app-daed/pkg-info.sh daed": [ "exec" ],
+				"/usr/share/luci-app-daed/pkg-info.sh luci-app-daed": [ "exec" ]
 			},
 			"ubus": {
 				"service": [ "list" ]
 			},
-			"uci": [ "daed" ]
+			"uci": [ "dae", "daed", "daed_luci" ]
 		},
 		"write": {
-			"uci": [ "daed" ]
+			"file": {
+				"/etc/dae/config.dae": [ "write" ],
+				"/etc/config/daed_luci": [ "write" ],
+				"/var/log/dae/dae.log": [ "write" ],
+				"/var/log/daed/daed.log": [ "write" ],
+				"/etc/init.d/dae start": [ "exec" ],
+				"/etc/init.d/dae stop": [ "exec" ],
+				"/etc/init.d/dae restart": [ "exec" ],
+				"/etc/init.d/dae enable": [ "exec" ],
+				"/etc/init.d/dae disable": [ "exec" ],
+				"/etc/init.d/dae hot_reload": [ "exec" ],
+				"/etc/init.d/daed start": [ "exec" ],
+				"/etc/init.d/daed stop": [ "exec" ],
+				"/etc/init.d/daed restart": [ "exec" ],
+				"/etc/init.d/daed enable": [ "exec" ],
+				"/etc/init.d/daed disable": [ "exec" ],
+				"/sbin/uci set dae.config.enabled=*": [ "exec" ],
+				"/sbin/uci set daed.config.enabled=*": [ "exec" ],
+				"/sbin/uci set daed_luci.config=daed_luci": [ "exec" ],
+				"/sbin/uci set daed_luci.config.active_backend=*": [ "exec" ],
+				"/sbin/uci commit dae": [ "exec" ],
+				"/sbin/uci commit daed": [ "exec" ],
+				"/sbin/uci commit daed_luci": [ "exec" ],
+				"/sbin/ip netns del daens": [ "exec" ],
+				"/usr/share/luci-app-daed/update-geo.sh geoip": [ "exec" ],
+				"/usr/share/luci-app-daed/update-geo.sh geosite": [ "exec" ],
+				"/usr/share/luci-app-daed/update-pkg.sh dae": [ "exec" ],
+				"/usr/share/luci-app-daed/update-pkg.sh daed": [ "exec" ],
+				"/usr/share/luci-app-daed/update-pkg.sh luci-app-daed": [ "exec" ]
+			},
+			"uci": [ "dae", "daed", "daed_luci" ]
 		}
 	}
 }
