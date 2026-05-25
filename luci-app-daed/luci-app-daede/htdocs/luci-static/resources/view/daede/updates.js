@@ -6,7 +6,7 @@
 'require uci';
 'require ui';
 'require view';
-'require view.daed.backend as backend';
+'require view.daede.backend as backend';
 
 const DATA_PATHS = {
 	geoip:   '/usr/share/v2ray/geoip.dat',
@@ -139,7 +139,7 @@ return view.extend({
 				ui.addNotification(null, E('p', _('%s update error: %s').format(label, e)), 'danger');
 			}).finally(function() {
 				btn.disabled = false;
-				btn.textContent = 'Update';
+				btn.textContent = _('Update');
 			});
 		};
 
@@ -162,7 +162,7 @@ return view.extend({
 				ui.addNotification(null, E('p', _('%s upgrade error: %s').format(pkg, e)), 'danger');
 			}).finally(function() {
 				btn.disabled = false;
-				btn.textContent = 'Upgrade';
+				btn.textContent = _('Upgrade');
 			});
 		};
 
@@ -199,7 +199,7 @@ return view.extend({
 					{ k: 'geoip',   name: 'GeoIP',   r: geoip },
 					{ k: 'geosite', name: 'GeoSite', r: geosite }
 				].forEach(function(entry) {
-					const btn = E('button', { 'class': 'dd-up-btn dd-up-btn-primary' }, 'Update');
+					const btn = E('button', { 'class': 'dd-up-btn dd-up-btn-primary' }, _('Update'));
 					btn.addEventListener('click', function() { updateGeo(entry.k, btn); });
 					const meta = entry.r.exists
 						? fmtBytes(entry.r.size) + (entry.r.mtime ? ' · ' + fmtMtime(entry.r.mtime) : '')
@@ -216,12 +216,12 @@ return view.extend({
 				// pkg rows
 				while (pkgBody.firstChild) pkgBody.removeChild(pkgBody.firstChild);
 				corePkgs.map(function(pkg) {
-					const label = pkg + ' binary' + (ctx.name === pkg ? ' · ' + _('active') : '');
+					const label = _('%s binary').format(pkg) + (ctx.name === pkg ? ' · ' + _('active') : '');
 					return { k: pkg, name: label, r: coreInfo[pkg] };
 				}).concat([
 					{ k: 'luci-app-daede', name: 'luci-app-daede', r: luci }
 				]).forEach(function(entry) {
-					const btn = E('button', { 'class': 'dd-up-btn' }, 'Upgrade');
+					const btn = E('button', { 'class': 'dd-up-btn' }, _('Upgrade'));
 					btn.addEventListener('click', function() { upgradePkg(entry.k, btn); });
 					const sameVersion = entry.r.installed && entry.r.latest && entry.r.installed === entry.r.latest;
 					const updatable = entry.r.installed && entry.r.latest && entry.r.installed !== entry.r.latest;
@@ -231,12 +231,12 @@ return view.extend({
 						btn.disabled = true;
 						btn.textContent = _('Unavailable');
 					} else if (sameVersion) {
-						meta = 'installed: ' + entry.r.installed + ' · up to date';
+						meta = _('installed') + ': ' + entry.r.installed + ' · ' + _('up to date');
 					} else if (updatable) {
-						meta = 'installed: ' + entry.r.installed + ' → latest: ' + entry.r.latest;
+						meta = _('installed') + ': ' + entry.r.installed + ' → ' + _('latest') + ': ' + entry.r.latest;
 						btn.classList.add('dd-up-btn-primary');
 					} else {
-						meta = 'installed: ' + entry.r.installed + (entry.r.latest ? ' · latest: ' + entry.r.latest : '');
+						meta = _('installed') + ': ' + entry.r.installed + (entry.r.latest ? ' · ' + _('latest') + ': ' + entry.r.latest : '');
 					}
 					pkgBody.appendChild(mkRow(
 						updatable ? '⚠' : (entry.r.installed ? '✓' : '✗'),
@@ -252,14 +252,14 @@ return view.extend({
 				healthBody.appendChild(mkRow(
 					running[ctx.name] ? '✓' : '✗',
 					running[ctx.name] ? 'dd-up-ok' : 'dd-up-err',
-					ctx.name + ' process',
+					_('%s process').format(ctx.name),
 					running[ctx.name] ? _('pgrep reports the backend is running') : _('backend process is not running')
 				));
 
 				if (btf.exists)
-					healthBody.appendChild(mkRow('✓', 'dd-up-ok', 'Kernel BTF', HEALTH_PATHS.btf + ' · ' + fmtBytes(btf.size)));
+					healthBody.appendChild(mkRow('✓', 'dd-up-ok', _('Kernel BTF'), HEALTH_PATHS.btf + ' · ' + fmtBytes(btf.size)));
 				else
-					healthBody.appendChild(mkRow('✗', 'dd-up-err', 'Kernel BTF', _('not available — eBPF needs CONFIG_DEBUG_INFO_BTF or vmlinux-btf')));
+					healthBody.appendChild(mkRow('✗', 'dd-up-err', _('Kernel BTF'), _('not available — eBPF needs CONFIG_DEBUG_INFO_BTF or vmlinux-btf')));
 
 				if (ctx.backend.hasWebUI) {
 					const listenAddr = uci.get('daed', 'config', 'listen_addr') || ctx.backend.defaultListen;
@@ -267,24 +267,24 @@ return view.extend({
 					healthBody.appendChild(mkRow(
 						service.running ? '✓' : '✗',
 						service.running ? 'dd-up-ok' : 'dd-up-err',
-						'WebUI/API',
+						_('WebUI/API'),
 						service.running ? _('service is running, expected on port %s').format(port) : _('service is stopped')
 					));
 				} else {
-					healthBody.appendChild(mkRow('✓', 'dd-up-ok', 'Hot reload', _('/etc/init.d/dae hot_reload is available')));
+					healthBody.appendChild(mkRow('✓', 'dd-up-ok', _('Hot reload'), _('/etc/init.d/dae hot_reload is available')));
 				}
 
 				if (ctx.backend.useNetns && ns && ns.exists) {
-					const btn = E('button', { 'class': 'dd-up-btn' }, 'Clean');
+					const btn = E('button', { 'class': 'dd-up-btn' }, _('Clean'));
 					btn.addEventListener('click', function() {
 						btn.disabled = true;
 						fs.exec('/sbin/ip', ['netns', 'del', 'daens']).then(function(res) {
 							ui.addNotification(null, E('p', res.code === 0 ? _('netns daens removed.') : (res.stderr || res.stdout || 'failed')), res.code === 0 ? 'info' : 'warning');
 						}).finally(function() { btn.disabled = false; });
 					});
-					healthBody.appendChild(mkRow('⚠', 'dd-up-warn', 'netns daens', HEALTH_PATHS.netns + ' · ' + _('exists, may block daed start'), btn));
+					healthBody.appendChild(mkRow('⚠', 'dd-up-warn', _('netns daens'), HEALTH_PATHS.netns + ' · ' + _('exists, may block daed start'), btn));
 				} else if (ctx.backend.useNetns) {
-					healthBody.appendChild(mkRow('✓', 'dd-up-ok', 'netns daens', HEALTH_PATHS.netns + ' · ' + _('clean')));
+					healthBody.appendChild(mkRow('✓', 'dd-up-ok', _('netns daens'), HEALTH_PATHS.netns + ' · ' + _('clean')));
 				}
 			});
 		};
@@ -295,17 +295,17 @@ return view.extend({
 		return E('div', { 'class': 'dd-up-wrap' }, [
 			E('style', {}, CSS),
 			E('div', { 'class': 'dd-card' }, [
-				E('h4', { 'class': 'dd-card-title' }, 'Data Updates'),
+				E('h4', { 'class': 'dd-card-title' }, _('Data Updates')),
 				dataBody
 			]),
 			E('div', { 'class': 'dd-card' }, [
-				E('h4', { 'class': 'dd-card-title' }, 'Package Updates'),
+				E('h4', { 'class': 'dd-card-title' }, _('Package Updates')),
 				pkgBody
 			]),
 			(function() {
 				const adv = E('div', { 'class': 'dd-adv dd-closed' }, [
 					E('div', { 'class': 'dd-adv-bar' }, [
-						E('span', {}, 'System Health'),
+						E('span', {}, _('System Health')),
 						E('span', { 'class': 'dd-adv-chevron' }, '›')
 					]),
 					E('div', { 'class': 'dd-adv-body' }, [ healthBody ])

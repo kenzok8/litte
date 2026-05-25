@@ -5,7 +5,7 @@
 'require poll';
 'require ui';
 'require view';
-'require view.daed.backend as backend';
+'require view.daede.backend as backend';
 
 const MAX_LINES = 5000;
 
@@ -137,19 +137,19 @@ return view.extend({
 			state.paused = cbPause.checked;
 		});
 
-		const inFilter = E('input', { 'type': 'text', 'placeholder': 'Filter (substring)' });
+		const inFilter = E('input', { 'type': 'text', 'placeholder': _('Filter (substring)') });
 		inFilter.addEventListener('input', function() {
 			state.filter = inFilter.value.toLowerCase();
 			applyFilter();
 		});
 
-		const btnClear = E('button', { 'class': 'dd-log-btn' }, 'Clear View');
+		const btnClear = E('button', { 'class': 'dd-log-btn' }, _('Clear View'));
 		btnClear.addEventListener('click', function() {
 			while (pane.firstChild) pane.removeChild(pane.firstChild);
 			state.lastContent = '';
 		});
 
-		const btnDownload = E('button', { 'class': 'dd-log-btn' }, 'Download');
+		const btnDownload = E('button', { 'class': 'dd-log-btn' }, _('Download'));
 		btnDownload.addEventListener('click', function() {
 			const blob = new Blob([state.lastContent || ''], { type: 'text/plain' });
 			const url = URL.createObjectURL(blob);
@@ -162,7 +162,7 @@ return view.extend({
 			URL.revokeObjectURL(url);
 		});
 
-		const btnTruncate = E('button', { 'class': 'dd-log-btn' }, 'Clear File');
+		const btnTruncate = E('button', { 'class': 'dd-log-btn' }, _('Clear File'));
 		btnTruncate.addEventListener('click', function() {
 			if (!confirm(_('Truncate %s log on the router? This cannot be undone.').format(ctx.name)))
 				return;
@@ -265,8 +265,8 @@ return view.extend({
 		tick();
 
 		const toolbar = E('div', { 'class': 'dd-log-toolbar' }, [
-			E('label', {}, [ cbAuto, ' Auto-scroll' ]),
-			E('label', {}, [ cbPause, ' Pause' ]),
+			E('label', {}, [ cbAuto, _('Auto-scroll') ]),
+			E('label', {}, [ cbPause, _('Pause') ]),
 			inFilter,
 			btnClear,
 			btnDownload,
@@ -277,7 +277,7 @@ return view.extend({
 		return E('div', { 'class': 'dd-log-wrap' }, [
 			E('style', {}, CSS),
 			E('div', { 'class': 'dd-log-card' }, [
-				E('h4', { 'class': 'dd-log-card-title' }, ctx.name + ' Realtime Log'),
+				E('h4', { 'class': 'dd-log-card-title' }, _('%s Realtime Log').format(ctx.name)),
 				toolbar,
 				pane
 			])
