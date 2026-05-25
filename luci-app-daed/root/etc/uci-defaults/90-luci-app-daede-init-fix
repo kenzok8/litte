@@ -4,13 +4,21 @@
 #   fatal: failed to create netns: open /run/netns/daens: file exists
 #
 # This script lives under /etc/uci-defaults/ which OpenWrt runs once on
-# every package install/upgrade and then removes — so each time luci-app-daed
+# every package install/upgrade and then removes - so each time luci-app-daede
 # is (re-)installed we re-patch the daed init.d even if it was overwritten
 # by a daed package upgrade in between.
 #
 # The patch is idempotent: a marker comment guards against double-injection.
 
 set -e
+
+# luci-app-daede owns the daed LuCI menu path. Remove stale files from the
+# official luci-app-daed package if it was installed before this package.
+rm -f /usr/share/luci/menu.d/luci-app-daed.json
+rm -f /usr/share/rpcd/acl.d/luci-app-daed.json
+rm -rf /usr/share/luci-app-daed
+rm -f /tmp/luci-indexcache.* 2>/dev/null || true
+rm -rf /tmp/luci-modulecache/* 2>/dev/null || true
 
 if ! uci -q get daed_luci.config >/dev/null 2>&1; then
 	touch /etc/config/daed_luci
@@ -24,7 +32,7 @@ if ! uci -q get daed_luci.config >/dev/null 2>&1; then
 fi
 
 INIT="/etc/init.d/daed"
-MARKER="# luci-app-daed: netns-cleanup"
+MARKER="# luci-app-daede: netns-cleanup"
 
 [ -f "$INIT" ] || exit 0
 grep -q "$MARKER" "$INIT" && exit 0

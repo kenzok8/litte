@@ -20,12 +20,13 @@ case "$TYPE" in
 		;;
 esac
 
-LOCK="/tmp/luci-app-daed.${TYPE}.lock"
-LOG="/tmp/luci-app-daed.${TYPE}.log"
+LOCK="/tmp/luci-app-daede.${TYPE}.lock"
+LOG="/tmp/luci-app-daede.${TYPE}.log"
 
 if [ -f "$LOCK" ]; then
 	# Lock is fresh (< 5 min)? Refuse. Stale? Remove and proceed.
-	age=$(( $(date +%s) - $(stat -c %Y "$LOCK" 2>/dev/null || echo 0) ))
+	mtime=$(date -r "$LOCK" +%s 2>/dev/null || echo 0)
+	age=$(( $(date +%s) - mtime ))
 	if [ "$age" -lt 300 ]; then
 		echo "${TYPE} update already in progress (PID $(cat "$LOCK" 2>/dev/null), age ${age}s)" >&2
 		exit 75
@@ -33,9 +34,13 @@ if [ -f "$LOCK" ]; then
 	rm -f "$LOCK"
 fi
 
+if ! ( set -C; echo "$$" >"$LOCK" ) 2>/dev/null; then
+	echo "${TYPE} update already in progress" >&2
+	exit 75
+fi
+
 # Spawn detached worker — parent returns immediately to LuCI.
 (
-	echo $$ > "$LOCK"
 	exec >"$LOG" 2>&1
 	trap 'rm -f "$LOCK"' EXIT INT TERM
 

@@ -6,7 +6,7 @@
 
 PKG="$1"
 case "$PKG" in
-	dae|daed|luci-app-daed) ;;
+	dae|daed|luci-app-daede) ;;
 	*) echo "" ; exit 64 ;;
 esac
 

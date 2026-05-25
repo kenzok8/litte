@@ -145,3 +145,75 @@ msgstr "现在运行 \"apk upgrade %s\" 吗？这可能会重启当前后端。"
 
 msgid "Truncate %s log on the router? This cannot be undone."
 msgstr "确定要清空路由器上的 %s 日志吗？此操作不可恢复。"
+
+msgid "Unavailable"
+msgstr "不可用"
+
+msgid "daed Settings"
+msgstr "daed 设置"
+
+msgid "dae Settings"
+msgstr "dae 设置"
+
+msgid "Log Advanced Settings"
+msgstr "日志高级设置"
+
+msgid "dae config file is empty. Click \"Initialize from example\" to start, or paste your config here."
+msgstr "dae 配置文件为空。点「从示例初始化」开始，或直接在这里粘贴你的配置。"
+
+msgid "Saving…"
+msgstr "保存中…"
+
+msgid "Saved · hot-reloaded"
+msgstr "已保存 · 已热重载"
+
+msgid "Reload failed: %s"
+msgstr "热重载失败：%s"
+
+msgid "Save failed: %s"
+msgstr "保存失败：%s"
+
+msgid "Loading example…"
+msgstr "加载示例中…"
+
+msgid "Example loaded"
+msgstr "示例已加载"
+
+msgid "Init failed: %s"
+msgstr "初始化失败：%s"
+
+msgid "Text-only mode."
+msgstr "纯文本模式。"
+
+msgid "dae has no built-in WebUI. Edit the config DSL below by hand (subscriptions, nodes, routing, DNS). \"Initialize from example\" loads the bundled template — replace the placeholder subscription URL with your own before saving. For point-and-click management, switch backend to daed."
+msgstr "dae 没有内置 WebUI，下面的 DSL 配置需要手工编辑（订阅、节点、路由、DNS）。「从示例初始化」会载入官方模板 —— 保存前请把占位的订阅链接换成你自己的。想图形化点选管理，请把后端切回 daed。"
+
+msgid "Validating…"
+msgstr "校验中…"
+
+msgid "Validate failed: %s"
+msgstr "配置校验失败：%s"
+
+msgid "Validated · saved · hot-reloaded"
+msgstr "已校验 · 已保存 · 已热重载"
+
+msgid "⚠ %d placeholder subscription(s) detected — replace them before saving, otherwise dae cannot fetch nodes:"
+msgstr "⚠ 检测到 %d 个占位订阅链接 —— 保存前请替换成你自己的，否则 dae 拉不到节点："
+
+msgid "Jump to line"
+msgstr "跳转到该行"
+
+msgid "Placeholder lines (click line number to jump):"
+msgstr "占位行（点行号跳转）："
+
+msgid "Insert config block at cursor"
+msgstr "在光标处插入配置块"
+
+msgid "+ Insert Block…"
+msgstr "+ 插入块…"
+
+msgid "lines"
+msgstr "行"
+
+msgid "⚠ %d placeholder"
+msgstr "⚠ %d 处占位"

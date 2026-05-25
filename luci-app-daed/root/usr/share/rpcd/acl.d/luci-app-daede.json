@@ -1,5 +1,5 @@
 {
-	"luci-app-daed": {
+	"luci-app-daede": {
 		"description": "Grant access to dae/daed configuration",
 		"read": {
 			"file": {
@@ -14,16 +14,19 @@
 				"/usr/share/v2ray/geosite.dat": [ "read" ],
 				"/sys/kernel/btf/vmlinux": [ "read" ],
 				"/run/netns/daens": [ "read" ],
-				"/tmp/luci-app-daed.geoip.log": [ "read" ],
-				"/tmp/luci-app-daed.geosite.log": [ "read" ],
-				"/tmp/luci-app-daed.pkg-dae.log": [ "read" ],
-				"/tmp/luci-app-daed.pkg-daed.log": [ "read" ],
-				"/tmp/luci-app-daed.pkg-luci-app-daed.log": [ "read" ],
+				"/tmp/luci-app-daede.geoip.log": [ "read" ],
+				"/tmp/luci-app-daede.geosite.log": [ "read" ],
+				"/tmp/luci-app-daede.pkg-dae.log": [ "read" ],
+				"/tmp/luci-app-daede.pkg-daed.log": [ "read" ],
+				"/tmp/luci-app-daede.pkg-luci-app-daede.log": [ "read" ],
 				"/usr/bin/pgrep -x dae": [ "exec" ],
 				"/usr/bin/pgrep -x daed": [ "exec" ],
-				"/usr/share/luci-app-daed/pkg-info.sh dae": [ "exec" ],
-				"/usr/share/luci-app-daed/pkg-info.sh daed": [ "exec" ],
-				"/usr/share/luci-app-daed/pkg-info.sh luci-app-daed": [ "exec" ]
+				"/usr/bin/dae validate -c /tmp/dae-validate.dae": [ "exec" ],
+				"/usr/bin/dae --version": [ "exec" ],
+				"/bin/rm -f /tmp/dae-validate.dae": [ "exec" ],
+				"/usr/share/luci-app-daede/pkg-info.sh dae": [ "exec" ],
+				"/usr/share/luci-app-daede/pkg-info.sh daed": [ "exec" ],
+				"/usr/share/luci-app-daede/pkg-info.sh luci-app-daede": [ "exec" ]
 			},
 			"ubus": {
 				"service": [ "list" ]
@@ -33,6 +36,7 @@
 		"write": {
 			"file": {
 				"/etc/dae/config.dae": [ "write" ],
+				"/tmp/dae-validate.dae": [ "write" ],
 				"/etc/config/daed_luci": [ "write" ],
 				"/var/log/dae/dae.log": [ "write" ],
 				"/var/log/daed/daed.log": [ "write" ],
@@ -55,11 +59,11 @@
 				"/sbin/uci commit daed": [ "exec" ],
 				"/sbin/uci commit daed_luci": [ "exec" ],
 				"/sbin/ip netns del daens": [ "exec" ],
-				"/usr/share/luci-app-daed/update-geo.sh geoip": [ "exec" ],
-				"/usr/share/luci-app-daed/update-geo.sh geosite": [ "exec" ],
-				"/usr/share/luci-app-daed/update-pkg.sh dae": [ "exec" ],
-				"/usr/share/luci-app-daed/update-pkg.sh daed": [ "exec" ],
-				"/usr/share/luci-app-daed/update-pkg.sh luci-app-daed": [ "exec" ]
+				"/usr/share/luci-app-daede/update-geo.sh geoip": [ "exec" ],
+				"/usr/share/luci-app-daede/update-geo.sh geosite": [ "exec" ],
+				"/usr/share/luci-app-daede/update-pkg.sh dae": [ "exec" ],
+				"/usr/share/luci-app-daede/update-pkg.sh daed": [ "exec" ],
+				"/usr/share/luci-app-daede/update-pkg.sh luci-app-daede": [ "exec" ]
 			},
 			"uci": [ "dae", "daed", "daed_luci" ]
 		}

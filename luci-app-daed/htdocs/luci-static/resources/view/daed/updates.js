@@ -37,7 +37,16 @@ const CSS = [
 	'.dd-up-btn-primary{border-color:#4aa065;color:#4aa065}',
 	'.dd-up-log{margin-top:10px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11px;background:#1a1d21;color:#d8dde6;padding:10px;border-radius:6px;max-height:200px;overflow:auto;white-space:pre-wrap;word-break:break-all;display:none}',
 	'.dd-up-log.show{display:block}',
-	'body.dark .dd-card,html[data-theme="dark"] .dd-card,html[data-bs-theme="dark"] .dd-card{border-color:rgba(255,255,255,.08);background:rgba(255,255,255,.02)}'
+	/* 手风琴折叠组 —— 与 config.js dd-adv 同构 */
+	'.dd-adv{margin-bottom:14px}',
+	'.dd-adv-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;cursor:pointer;user-select:none;font-size:11.5px;font-weight:600;background:rgba(128,128,128,.04);border:1px solid rgba(0,0,0,.06);border-radius:10px;color:inherit;letter-spacing:.3px;text-transform:uppercase;opacity:.7;box-shadow:0 2px 8px rgba(0,0,0,.03)}',
+	'.dd-adv-bar:hover{background:rgba(56,134,161,.06);opacity:.95}',
+	'.dd-adv-chevron{font-size:14px;font-weight:700;opacity:.55;transition:transform .2s;text-transform:none}',
+	'.dd-adv:not(.dd-closed) .dd-adv-chevron{transform:rotate(90deg)}',
+	'.dd-adv-body{margin-top:8px;padding:10px 14px;border:1px solid rgba(0,0,0,.06);border-radius:10px;background:rgba(255,255,255,.02);box-shadow:0 2px 8px rgba(0,0,0,.03)}',
+	'.dd-adv.dd-closed{margin-bottom:14px}',
+	'.dd-adv.dd-closed .dd-adv-body{display:none}',
+	'body.dark .dd-card,html[data-theme="dark"] .dd-card,html[data-bs-theme="dark"] .dd-card,body.dark .dd-adv-bar,body.dark .dd-adv-body,html[data-theme="dark"] .dd-adv-bar,html[data-theme="dark"] .dd-adv-body,html[data-bs-theme="dark"] .dd-adv-bar,html[data-bs-theme="dark"] .dd-adv-body{border-color:rgba(255,255,255,.08);background:rgba(255,255,255,.02)}'
 ].join('');
 
 function fmtBytes(n) {
@@ -60,7 +69,7 @@ function probeFile(path) {
 }
 
 function probePkg(pkg) {
-	return fs.exec('/usr/share/luci-app-daed/pkg-info.sh', [pkg]).then(function(res) {
+	return fs.exec('/usr/share/luci-app-daede/pkg-info.sh', [pkg]).then(function(res) {
 		const out = (res.stdout || '').trim().split('\t');
 		return { installed: out[0] || '', latest: out[1] || '' };
 	}).catch(function() {
@@ -117,10 +126,10 @@ return view.extend({
 			const label = kind === 'geoip' ? 'GeoIP' : 'GeoSite';
 			btn.disabled = true;
 			btn.textContent = '...';
-			return fs.exec('/usr/share/luci-app-daed/update-geo.sh', [kind]).then(function(res) {
+			return fs.exec('/usr/share/luci-app-daede/update-geo.sh', [kind]).then(function(res) {
 				if (res.code === 0) {
 					ui.addNotification(null, E('p', _('%s download started — will refresh in 1–3 min.').format(label)), 'info');
-					setTimeout(function() { tailLog('/tmp/luci-app-daed.' + kind + '.log', logPane); }, 2000);
+					setTimeout(function() { tailLog('/tmp/luci-app-daede.' + kind + '.log', logPane); }, 2000);
 				} else if (res.code === 75) {
 					ui.addNotification(null, E('p', _('%s update already running.').format(label)), 'warning');
 				} else {
@@ -134,16 +143,16 @@ return view.extend({
 			});
 		};
 
-		// === Package updates (dae|daed / luci-app-daed) ===
+		// === Package updates (dae|daed / luci-app-daede) ===
 		const upgradePkg = function(pkg, btn) {
 			if (!confirm(_('Run "apk upgrade %s" now? This may restart the active backend.').format(pkg)))
 				return;
 			btn.disabled = true;
 			btn.textContent = '...';
-			return fs.exec('/usr/share/luci-app-daed/update-pkg.sh', [pkg]).then(function(res) {
+			return fs.exec('/usr/share/luci-app-daede/update-pkg.sh', [pkg]).then(function(res) {
 				if (res.code === 0) {
 					ui.addNotification(null, E('p', _('%s upgrade started — see log below.').format(pkg)), 'info');
-					setTimeout(function() { tailLog('/tmp/luci-app-daed.pkg-' + pkg + '.log', logPane); }, 3000);
+					setTimeout(function() { tailLog('/tmp/luci-app-daede.pkg-' + pkg + '.log', logPane); }, 3000);
 				} else if (res.code === 75) {
 					ui.addNotification(null, E('p', _('%s upgrade already running.').format(pkg)), 'warning');
 				} else {
@@ -169,7 +178,7 @@ return view.extend({
 			corePkgs.forEach(function(pkg) {
 				probes.push(probePkg(pkg));
 			});
-			probes.push(probePkg('luci-app-daed'));
+			probes.push(probePkg('luci-app-daede'));
 
 			if (ctx.backend.useNetns)
 				probes.push(probeFile(HEALTH_PATHS.netns));
@@ -210,7 +219,7 @@ return view.extend({
 					const label = pkg + ' binary' + (ctx.name === pkg ? ' · ' + _('active') : '');
 					return { k: pkg, name: label, r: coreInfo[pkg] };
 				}).concat([
-					{ k: 'luci-app-daed', name: 'luci-app-daed', r: luci }
+					{ k: 'luci-app-daede', name: 'luci-app-daede', r: luci }
 				]).forEach(function(entry) {
 					const btn = E('button', { 'class': 'dd-up-btn' }, 'Upgrade');
 					btn.addEventListener('click', function() { upgradePkg(entry.k, btn); });
@@ -219,6 +228,8 @@ return view.extend({
 					let meta;
 					if (!entry.r.installed) {
 						meta = _('not installed via package manager');
+						btn.disabled = true;
+						btn.textContent = _('Unavailable');
 					} else if (sameVersion) {
 						meta = 'installed: ' + entry.r.installed + ' · up to date';
 					} else if (updatable) {
@@ -291,10 +302,19 @@ return view.extend({
 				E('h4', { 'class': 'dd-card-title' }, 'Package Updates'),
 				pkgBody
 			]),
-			E('div', { 'class': 'dd-card' }, [
-				E('h4', { 'class': 'dd-card-title' }, 'System Health'),
-				healthBody
-			]),
+			(function() {
+				const adv = E('div', { 'class': 'dd-adv dd-closed' }, [
+					E('div', { 'class': 'dd-adv-bar' }, [
+						E('span', {}, 'System Health'),
+						E('span', { 'class': 'dd-adv-chevron' }, '›')
+					]),
+					E('div', { 'class': 'dd-adv-body' }, [ healthBody ])
+				]);
+				adv.firstChild.addEventListener('click', function() {
+					adv.classList.toggle('dd-closed');
+				});
+				return adv;
+			})(),
 			logPane
 		]);
 	},

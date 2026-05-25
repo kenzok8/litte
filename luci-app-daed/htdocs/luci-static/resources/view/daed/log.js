@@ -10,25 +10,39 @@
 const MAX_LINES = 5000;
 
 const CSS = [
-	'.dd-log-wrap{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif}',
-	'.dd-log-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 12px;border:1px solid rgba(0,0,0,.06);border-radius:10px 10px 0 0;background:rgba(128,128,128,.04)}',
-	'.dd-log-toolbar label{display:inline-flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;margin:0}',
+	'.dd-log-wrap{padding:4px 0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif}',
+	'.dd-log-card{border:1px solid rgba(0,0,0,.06);border-radius:10px;padding:10px 14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.03);background:rgba(255,255,255,.02)}',
+	'.dd-log-card-title{font-size:11px;font-weight:600;opacity:.55;margin:0 0 8px;letter-spacing:.3px;text-transform:uppercase}',
+	'.dd-log-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:0 0 8px;margin-bottom:8px;border-bottom:1px dashed rgba(128,128,128,.2)}',
+	'.dd-log-toolbar label{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;cursor:pointer;margin:0;opacity:.85}',
 	'.dd-log-toolbar input[type="checkbox"]{margin:0}',
-	'.dd-log-toolbar input[type="text"]{font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid rgba(0,0,0,.12);background:transparent;color:inherit;min-width:160px}',
-	'.dd-log-toolbar .dd-log-btn{font-size:12px;padding:4px 12px;border-radius:6px;border:1px solid rgba(0,0,0,.12);background:transparent;color:inherit;cursor:pointer}',
+	'.dd-log-toolbar input[type="text"]{font-size:11.5px;padding:4px 8px;border-radius:5px;border:1px solid rgba(128,128,128,.28);background:transparent;color:inherit;min-width:160px}',
+	'.dd-log-toolbar .dd-log-btn{font-size:11.5px;padding:4px 12px;border-radius:5px;border:1px solid rgba(128,128,128,.28);background:transparent;color:inherit;cursor:pointer}',
 	'.dd-log-toolbar .dd-log-btn:hover{background:rgba(128,128,128,.1)}',
-	'.dd-log-toolbar .dd-log-meta{margin-left:auto;font-size:11px;opacity:.55;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}',
-	'.dd-log-pane{height:60vh;min-height:360px;overflow:auto;padding:10px 12px;border:1px solid rgba(0,0,0,.06);border-top:0;border-radius:0 0 10px 10px;background:#1a1d21;color:#d8dde6;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-all}',
-	'.dd-log-pane .dd-line{padding:0 4px;border-radius:2px}',
-	'.dd-log-pane .dd-line.dd-info{color:#9aa5b1}',
-	'.dd-log-pane .dd-line.dd-warn{color:#e0b34a}',
-	'.dd-log-pane .dd-line.dd-error{color:#e07070}',
+	'.dd-log-toolbar .dd-log-meta{margin-left:auto;font-size:10.5px;opacity:.55;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}',
+	'.dd-log-pane{height:60vh;min-height:360px;overflow:auto;padding:8px 10px;border:1px solid rgba(0,0,0,.08);border-radius:7px;background:#1a1d21;color:#d8dde6;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;font-size:11.5px;line-height:1.55;white-space:pre-wrap;word-break:break-all}',
+	'.dd-log-pane .dd-line{padding:1px 4px;border-radius:3px;display:block}',
+	'.dd-log-pane .dd-line.dd-info{color:#cfd6df}',
+	'.dd-log-pane .dd-line.dd-warn{color:#e8b95a}',
+	'.dd-log-pane .dd-line.dd-error{color:#ea7878;background:rgba(234,120,120,.06)}',
 	'.dd-log-pane .dd-line.dd-debug{color:#7a8290;opacity:.7}',
 	'.dd-log-pane .dd-line.dd-hidden{display:none}',
 	'.dd-log-pane .dd-empty{opacity:.5;font-style:italic}',
-	'body.dark .dd-log-toolbar,html[data-theme="dark"] .dd-log-toolbar,html[data-bs-theme="dark"] .dd-log-toolbar{border-color:rgba(255,255,255,.1)}',
+	/* 简化后的字段视觉 */
+	'.dd-log-pane .dd-ts{color:#6b7480;margin-right:8px}',
+	'.dd-log-pane .dd-lvl{display:inline-block;min-width:38px;padding:0 5px;margin-right:8px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.4px;text-align:center;vertical-align:1px}',
+	'.dd-log-pane .dd-lvl-info{color:#7fc7a8;background:rgba(127,199,168,.08)}',
+	'.dd-log-pane .dd-lvl-warn{color:#e8b95a;background:rgba(232,185,90,.10)}',
+	'.dd-log-pane .dd-lvl-error{color:#ea7878;background:rgba(234,120,120,.10)}',
+	'.dd-log-pane .dd-lvl-debug{color:#7a8290;background:rgba(122,130,144,.10)}',
+	'.dd-log-pane .dd-msg{color:inherit}',
+	'.dd-log-pane .dd-kv{margin-left:6px;color:#6b7480;font-size:11px;opacity:.85}',
+	'body.dark .dd-log-card,html[data-theme="dark"] .dd-log-card,html[data-bs-theme="dark"] .dd-log-card{border-color:rgba(255,255,255,.08);background:rgba(255,255,255,.02)}',
 	'body.dark .dd-log-pane,html[data-theme="dark"] .dd-log-pane,html[data-bs-theme="dark"] .dd-log-pane{border-color:rgba(255,255,255,.1)}'
 ].join('');
+
+/* 拆字段：time="May 25 07:04:59" level=info msg="..." key=val key="val with space" ... */
+const RE_LINE = /^time="([^"]*)"\s+level=(\w+)\s+msg=(?:"((?:[^"\\]|\\.)*)"|(\S+))\s*(.*)$/;
 
 function detectLevel(line) {
 	// daed/dae logs use lvl=info / [INFO] / level=warning style
@@ -39,6 +53,45 @@ function detectLevel(line) {
 	if (lvl === 'INFO') return 'dd-info';
 	if (lvl.startsWith('WARN')) return 'dd-warn';
 	return 'dd-error';
+}
+
+/* 简化时间戳：daed 输出 `May 25 07:04:59` → `07:04:59`；其它格式原样保留 */
+function shortTs(raw) {
+	const m = raw && raw.match(/(\d{2}:\d{2}:\d{2})/);
+	return m ? m[1] : raw;
+}
+
+function lvlShort(level) {
+	const u = (level || '').toUpperCase();
+	if (u === 'WARNING') return 'WARN';
+	return u || '-';
+}
+
+function lvlClass(level) {
+	const u = (level || '').toUpperCase();
+	if (u === 'DEBUG') return 'dd-lvl-debug';
+	if (u === 'INFO') return 'dd-lvl-info';
+	if (u === 'WARN' || u === 'WARNING') return 'dd-lvl-warn';
+	return 'dd-lvl-error';
+}
+
+function buildLine(ln) {
+	const cls = detectLevel(ln);
+	const m = ln.match(RE_LINE);
+	if (!m) {
+		return E('div', { 'class': 'dd-line ' + cls }, ln);
+	}
+	const ts = shortTs(m[1]);
+	const lvl = m[2];
+	const msg = m[3] !== undefined ? m[3] : (m[4] || '');
+	const kv  = (m[5] || '').trim();
+	const parts = [
+		E('span', { 'class': 'dd-ts' }, ts),
+		E('span', { 'class': 'dd-lvl ' + lvlClass(lvl) }, lvlShort(lvl)),
+		E('span', { 'class': 'dd-msg' }, msg)
+	];
+	if (kv) parts.push(E('span', { 'class': 'dd-kv' }, kv));
+	return E('div', { 'class': 'dd-line ' + cls }, parts);
 }
 
 return view.extend({
@@ -138,8 +191,7 @@ return view.extend({
 			for (let i = 0; i < lines.length; i++) {
 				const ln = lines[i];
 				if (!ln) continue;
-				const cls = detectLevel(ln);
-				const el = E('div', { 'class': 'dd-line ' + cls }, ln);
+				const el = buildLine(ln);
 				if (state.filter && ln.toLowerCase().indexOf(state.filter) === -1)
 					el.classList.add('dd-hidden');
 				frag.appendChild(el);
@@ -224,9 +276,11 @@ return view.extend({
 
 		return E('div', { 'class': 'dd-log-wrap' }, [
 			E('style', {}, CSS),
-			E('h2', {}, [ 'Log' ]),
-			toolbar,
-			pane
+			E('div', { 'class': 'dd-log-card' }, [
+				E('h4', { 'class': 'dd-log-card-title' }, ctx.name + ' Realtime Log'),
+				toolbar,
+				pane
+			])
 		]);
 	},
 

@@ -1,23 +1,24 @@
 #!/bin/sh
-# update-pkg.sh <dae|daed|luci-app-daed>
+# update-pkg.sh <dae|daed|luci-app-daede>
 # Refresh package indexes and upgrade the named package via apk (25.12+) or
 # opkg (24.10). Forks the work to background so the LuCI RPC call returns
-# immediately; the result is streamed to /tmp/luci-app-daed.pkg.<name>.log.
+# immediately; the result is streamed to /tmp/luci-app-daede.pkg.<name>.log.
 
 PKG="$1"
 case "$PKG" in
-	dae|daed|luci-app-daed) ;;
+	dae|daed|luci-app-daede) ;;
 	*)
-		echo "usage: $0 <dae|daed|luci-app-daed>" >&2
+		echo "usage: $0 <dae|daed|luci-app-daede>" >&2
 		exit 64
 		;;
 esac
 
-LOCK="/tmp/luci-app-daed.pkg-${PKG}.lock"
-LOG="/tmp/luci-app-daed.pkg-${PKG}.log"
+LOCK="/tmp/luci-app-daede.pkg-${PKG}.lock"
+LOG="/tmp/luci-app-daede.pkg-${PKG}.log"
 
 if [ -f "$LOCK" ]; then
-	age=$(( $(date +%s) - $(stat -c %Y "$LOCK" 2>/dev/null || echo 0) ))
+	mtime=$(date -r "$LOCK" +%s 2>/dev/null || echo 0)
+	age=$(( $(date +%s) - mtime ))
 	if [ "$age" -lt 300 ]; then
 		echo "${PKG} update already in progress (PID $(cat "$LOCK" 2>/dev/null), age ${age}s)" >&2
 		exit 75
@@ -25,8 +26,12 @@ if [ -f "$LOCK" ]; then
 	rm -f "$LOCK"
 fi
 
+if ! ( set -C; echo "$$" >"$LOCK" ) 2>/dev/null; then
+	echo "${PKG} update already in progress" >&2
+	exit 75
+fi
+
 (
-	echo $$ > "$LOCK"
 	exec >"$LOG" 2>&1
 	trap 'rm -f "$LOCK"' EXIT INT TERM
 
@@ -52,8 +57,8 @@ fi
 
 	echo "$(date '+%F %T') done (rc=$rc)"
 
-	# luci-app-daed upgrade replaces ACL JSON — reload rpcd so changes apply.
-	if [ "$PKG" = "luci-app-daed" ] && [ "$rc" = "0" ]; then
+	# luci-app-daede upgrade replaces ACL JSON — reload rpcd so changes apply.
+	if [ "$PKG" = "luci-app-daede" ] && [ "$rc" = "0" ]; then
 		echo "reloading rpcd to pick up new ACL"
 		/etc/init.d/rpcd reload 2>&1
 	fi

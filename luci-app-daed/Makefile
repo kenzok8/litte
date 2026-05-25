@@ -4,7 +4,7 @@
 
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=luci-app-daed
+PKG_NAME:=luci-app-daede
 PKG_VERSION:=1.1
 PKG_RELEASE:=1
 
@@ -17,7 +17,7 @@ define Package/$(PKG_NAME)/config
 		prompt "Backend dependency"
 		default PACKAGE_$(PKG_NAME)_daed
 		help
-			Select which backend package luci-app-daed should pull in by default.
+			Select which backend package luci-app-daede should pull in by default.
 
 	config PACKAGE_$(PKG_NAME)_daed
 		bool "daed backend"
