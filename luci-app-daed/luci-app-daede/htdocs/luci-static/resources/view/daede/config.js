@@ -35,7 +35,7 @@ const CSS = [
 	'.dd-backend-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}',
 	'.dd-backend-label{min-width:100px;font-size:12px;font-weight:600;opacity:.72}',
 	'.dd-backend-segment{display:inline-flex;align-items:center;gap:2px;padding:2px;border-radius:7px;background:rgba(128,128,128,.10)}',
-	'.dd-backend-btn{display:inline-flex;align-items:center;gap:6px;min-width:78px;height:24px;padding:0 10px;border:0;border-radius:5px;background:transparent;color:inherit;font-size:11px;font-weight:500;opacity:.65;cursor:pointer;transition:background .18s ease,color .18s ease,opacity .18s ease}',
+	'.dd-backend-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:78px;height:24px;padding:0 10px;border:0;border-radius:5px;background:transparent;color:inherit;font-size:11px;font-weight:500;opacity:.65;cursor:pointer;transition:background .18s ease,color .18s ease,opacity .18s ease}',
 	'.dd-backend-btn:hover{background:rgba(128,128,128,.10)}',
 	'.dd-backend-btn.is-active{background:linear-gradient(#3886a1,#2f7288);color:#fff;opacity:1;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.12)}',
 	'.dd-backend-btn:disabled{opacity:.55;cursor:not-allowed}',
@@ -56,7 +56,7 @@ const CSS = [
 	'.dd-settings-card .cbi-value-description,.dd-settings-card .cbi-value-helptext{font-size:11.5px !important;opacity:.6;line-height:1.45;padding-top:3px}',
 	/* 手风琴折叠组 —— 视觉与 clashoo cl-component-adv 一致 */
 	'.dd-adv{margin-top:10px}',
-	'.dd-adv-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;cursor:pointer;user-select:none;font-size:12px;font-weight:600;background:rgba(128,128,128,.06);border:1px solid rgba(128,128,128,.16);border-radius:7px;color:inherit;opacity:.85}',
+	'.dd-adv-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;cursor:pointer;user-select:none;font-size:12px;font-weight:600;background:rgba(128,128,128,.06);border:1px solid rgba(128,128,128,.16);border-radius:7px;color:inherit;opacity:.55}',
 	'.dd-adv-bar:hover{background:rgba(56,134,161,.08);opacity:1}',
 	'.dd-adv-chevron{font-size:14px;font-weight:700;opacity:.55;transition:transform .2s}',
 	'.dd-adv:not(.dd-closed) .dd-adv-chevron{transform:rotate(90deg)}',
@@ -77,9 +77,19 @@ const CSS = [
 	'.dd-editor-status.show{opacity:1}',
 	'.dd-editor-status.ok{color:#3da66a}',
 	'.dd-editor-status.err{color:#d96d6d}',
-	'.dd-editor-hint{font-size:11.5px;opacity:.62;line-height:1.5;margin:0 0 8px;padding:7px 10px;border-radius:6px;background:rgba(56,134,161,.06);border-left:3px solid rgba(56,134,161,.5)}',
+	'.dd-editor-hint{font-size:11.5px;opacity:.62;line-height:1.5;margin:0 0 8px;padding:7px 10px;border-radius:6px;background:rgba(56,134,161,.06)}',
 	'.dd-editor-hint b{font-weight:600;opacity:.85}',
-	'.dd-ph-warn{display:none;font-size:12px;line-height:1.6;margin:0 0 8px;padding:10px 12px;border-radius:6px;background:rgba(217,158,0,.08);border-left:3px solid rgba(217,158,0,.7);color:inherit}',
+		'.dd-sub-card{margin:0 0 10px;padding:10px 14px;border:0;border-radius:8px;background:transparent}',
+		'.dd-sub-card-title{font-size:11px;font-weight:600;opacity:.55;margin:0 0 8px;letter-spacing:.3px;text-transform:uppercase}',
+		'.dd-sub-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}',
+		'.dd-sub-row input{flex:1;min-width:200px;font-size:12px;padding:6px 10px;border-radius:5px;border:1px solid rgba(128,128,128,.28);background:transparent;color:var(--text-color,inherit)}',
+		'.dd-sub-row input:focus{border-color:rgba(74,160,101,.55);outline:0;box-shadow:0 0 0 2px rgba(74,160,101,.12)}.dd-sub-row input::placeholder{opacity:.45;color:rgba(92,102,120,.8)}',
+		'.dd-sub-apply{font-size:11px;padding:5px 14px;border-radius:5px;border:1px solid #4aa065;color:#4aa065;background:transparent;cursor:pointer;white-space:nowrap;font-weight:600}',
+		'.dd-sub-apply:hover{background:rgba(74,160,101,.12)}',
+		'.dd-sub-apply:disabled{opacity:.45;cursor:not-allowed}',
+		'.dd-sub-status{font-size:11px;margin-left:8px;opacity:0;transition:opacity .2s;white-space:nowrap}',
+		'.dd-sub-status.show{opacity:1}',
+	'.dd-ph-warn{display:none;font-size:12px;line-height:1.6;margin:0 0 8px;padding:10px 12px;border-radius:6px;background:rgba(217,158,0,.08);color:inherit}',
 	'.dd-ph-warn.show{display:block}',
 	'.dd-ph-warn-title{font-weight:600;margin-bottom:6px;color:#b07d00;font-size:12.5px}',
 	'body.dark .dd-ph-warn-title,html[data-theme="dark"] .dd-ph-warn-title,html[data-bs-theme="dark"] .dd-ph-warn-title{color:#e0b34a}',
@@ -97,19 +107,12 @@ const CSS = [
 	'body.dark .dd-settings-card .cbi-value-field input,body.dark .dd-settings-card .cbi-value-field select,body.dark .dd-settings-card .cbi-value-field textarea,html[data-theme="dark"] .dd-settings-card .cbi-value-field input,html[data-theme="dark"] .dd-settings-card .cbi-value-field select,html[data-theme="dark"] .dd-settings-card .cbi-value-field textarea,html[data-bs-theme="dark"] .dd-settings-card .cbi-value-field input,html[data-bs-theme="dark"] .dd-settings-card .cbi-value-field select,html[data-bs-theme="dark"] .dd-settings-card .cbi-value-field textarea{border-color:rgba(255,255,255,.18)}'
 ].join('');
 
-function notifyAction(action, res) {
-	if (res && res.code !== 0)
-		ui.addNotification(null, E('p', _('Action "%s" failed: %s').format(action, res.stderr || res.stdout || ('exit ' + res.code))), 'danger');
-	else
-		ui.addNotification(null, E('p', _('Action "%s" succeeded.').format(action)), 'info');
-}
+function notifyAction() {}
 
 function execInit(be, action) {
 	return fs.exec(be.initd, [action]).then(function(res) {
 		notifyAction(action, res);
-	}).catch(function(e) {
-		ui.addNotification(null, E('p', _('Action "%s" error: %s').format(action, e)), 'danger');
-	});
+	}).catch(function() {});
 }
 
 function rejectIfOtherRunning(be, running) {
@@ -206,14 +209,12 @@ function renderBackendSwitcher(ctx) {
 				.then(function() { return backend.setActiveBackend(name); })
 				.then(function() {
 					showHint(_('Switched to %s. Click start when you want it to run.').format(name));
-					ui.addNotification(null, E('p', _('Backend switched to %s. Click start to run it.').format(name)), 'info');
 					setTimeout(function() { window.location.reload(); }, 650);
 				})
 				.catch(function(e) {
 					busy = false;
 					Array.prototype.forEach.call(segment.querySelectorAll('button'), function(b) { b.disabled = false; });
 					showHint(_('Switch failed.'));
-					ui.addNotification(null, E('p', _('Failed to switch backend: %s').format(e.message || e)), 'danger');
 				});
 		});
 		segment.appendChild(btn);
@@ -292,6 +293,30 @@ function renderStatusCard(ctx, listenAddr) {
 				execInit(be, 'hot_reload').finally(function() { hot.disabled = false; });
 			});
 			actions.push(hot);
+		}
+		if (state.running && be.name === 'dae') {
+			const ckBtn = E('button', { 'class': 'cbi-button cbi-button-action' }, _('Check Proxy Status'));
+			const ckRes = E('span', { 'class': 'dd-meta', style: 'margin-left:8px;display:none' }, '');
+			ckBtn.addEventListener('click', function(ev) {
+				ev.preventDefault();
+				ckBtn.disabled = true;
+				ckRes.style.display = 'inline';
+				ckRes.textContent = '...';
+				fs.exec('/bin/grep', ['-c', 'my_group', '/var/log/dae/dae.log']).then(function(r) {
+					var n = parseInt((r && r.stdout) || '0');
+					if (n > 0)
+						ckRes.textContent = _('OK, %d flows through proxy').format(n);
+					else
+						ckRes.textContent = _('No proxy traffic');
+				}).catch(function() {
+					ckRes.textContent = _('No proxy traffic');
+				}).finally(function() {
+					ckBtn.disabled = false;
+					setTimeout(function() { ckRes.style.display = 'none'; }, 8000);
+				});
+			});
+			actions.push(ckBtn);
+			actions.push(ckRes);
 		}
 		if (actions.length)
 			body.appendChild(E('div', { 'class': 'dd-actions' }, actions));
@@ -374,35 +399,26 @@ function renderDaedSettings() {
 }
 
 function renderDaeSettings() {
-	let m, s, o;
-	m = new form.Map('dae', null, null);
-
-	s = m.section(form.NamedSection, 'config', 'dae');
+	var m = new form.Map('dae', null, null);
+	var s = m.section(form.NamedSection, 'config', 'dae');
 	s.addremove = false;
 	s.anonymous = true;
-
-	o = s.option(form.Value, 'config_file', _('Configuration File'));
+	var o = s.option(form.Value, 'config_file', _('Configuration File'));
 	o.default = '/etc/dae/config.dae';
 	o.rmempty = false;
 	o.readonly = true;
-
-	o = s.option(form.Value, 'log_maxsize', _('Max Log Size (MB)'),
-		_('Rotate the log file once it grows past this many megabytes.'));
+	o = s.option(form.Value, 'log_maxsize', _('Max Log Size (MB)'), _('Rotate the log file once it grows past this many megabytes.'));
 	o.datatype = 'uinteger';
 	o.default = '1';
-
-	o = s.option(form.Value, 'log_maxbackups', _('Max Log Backups'),
-		_('Number of rotated log files to keep.'));
+	o = s.option(form.Value, 'log_maxbackups', _('Max Log Backups'), _('Number of rotated log files to keep.'));
 	o.datatype = 'uinteger';
 	o.default = '1';
-
-	return wrapSettingsCard(
-		_('dae Settings'),
-		_('eBPF-based Linux high-performance transparent proxy solution.'),
-		m.render(),
-		_('Log Advanced Settings'),
-		['log_maxsize', 'log_maxbackups']
-	);
+	return m.render().then(function(node) {
+		var css = document.createElement('style');
+		css.textContent = '.cbi-section>h3{display:none}.cbi-map>h2{display:none}.cbi-value-title{font-size:12px!important;opacity:.75;min-width:130px}.cbi-value-field input{font-size:12px!important;padding:5px 8px;border-radius:5px;border:1px solid rgba(128,128,128,.28);background:transparent;color:inherit}';
+		node.insertBefore(css, node.firstChild);
+		return node;
+	});
 }
 
 /* dae 示例里的占位订阅特征 —— example.com、relative/path/to 或中文占位文本 */
@@ -645,12 +661,16 @@ function renderDaeEditor() {
 				flashStatus(_('Saving…'));
 				return fs.write(backend.BACKENDS.dae.config, textarea.value, 384);
 			})
-			.then(function() { return fs.exec(backend.BACKENDS.dae.initd, ['hot_reload']); })
-			.then(function(res) {
-				if (res && res.code !== 0)
-					flashStatus(_('Reload failed: %s').format(res.stderr || res.stdout || ('exit ' + res.code)), 'err', 8000);
-				else
-					flashStatus(_('Validated · saved · hot-reloaded'), 'ok');
+			.then(function() { return backend.detectRunning(); })
+			.then(function(running) {
+				if (running && running.dae)
+					return fs.exec(backend.BACKENDS.dae.initd, ['hot_reload']).then(function(res) {
+						if (res && res.code !== 0)
+							flashStatus(_('Reload failed: %s').format(res.stderr || res.stdout || ('exit ' + res.code)), 'err', 8000);
+						else
+							flashStatus(_('Validated · saved · hot-reloaded'), 'ok');
+					});
+				flashStatus(_('Saved OK (start dae to apply)'), 'ok');
 			})
 			.catch(function(e) {
 				if (e && e.message === 'validate-failed') return;
@@ -664,15 +684,16 @@ function renderDaeEditor() {
 
 	init.addEventListener('click', function(ev) {
 		ev.preventDefault();
+		if (textarea.value.trim() && !confirm(_('This will replace your current config. Continue?')))
+			return;
 		init.disabled = true;
 		flashStatus(_('Loading example…'));
 		fs.read_direct(backend.BACKENDS.dae.example, 'text')
 			.then(function(content) {
 				textarea.value = simplifySubscriptionBlock(content || '');
 				refreshPlaceholders();
-				return fs.write(backend.BACKENDS.dae.config, textarea.value, 384);
+				flashStatus(_('Example loaded — save to apply'), 'ok');
 			})
-			.then(function() { flashStatus(_('Example loaded'), 'ok'); })
 			.catch(function(e) { flashStatus(_('Init failed: %s').format(e.message || e), 'err'); })
 			.finally(function() { init.disabled = false; });
 	});
@@ -690,15 +711,83 @@ function renderDaeEditor() {
 
 	return E('div', { 'class': 'dd-card' }, [
 		E('h4', { 'class': 'dd-card-title' }, _('dae Configuration')),
-		E('div', { 'class': 'dd-editor-hint' }, [
-			E('b', {}, _('Text-only mode.')),
-			' ',
-			_('dae has no built-in WebUI. Edit the config DSL below by hand (subscriptions, nodes, routing, DNS). "Initialize from example" loads the bundled template — replace the placeholder subscription URL with your own before saving. For point-and-click management, switch backend to daed.')
-		]),
-		phWarn,
-		textarea,
-		footer,
-		E('div', { 'class': 'dd-editor-actions' }, [ save, init, insertSelect, status ])
+		(function() {
+			var subInput = E('input', { type: 'text', placeholder: _('Paste subscription URL here') });
+			var subApply = E('button', { 'class': 'dd-sub-apply' }, _('Apply and Save'));
+			var subStatus = E('span', { 'class': 'dd-sub-status' }, '');
+			subApply.addEventListener('click', function(ev) {
+				ev.preventDefault();
+				var url = subInput.value.trim();
+				if (!url) return;
+				subApply.disabled = true;
+				subStatus.textContent = _('Applying…');
+				subStatus.classList.add('show');
+				var current = textarea.value || '';
+				var updated = current.replace(/(my_sub:\s*)'[^']*'/, "$1'" + url + "'");
+				if (!updated.includes(url)) {
+					subStatus.textContent = _('Not found, load example first');
+					subApply.disabled = false;
+					return;
+				}
+				textarea.value = updated;
+				refreshPlaceholders();
+				fs.write(backend.BACKENDS.dae.config, updated, 384)
+					.then(function() { return backend.detectRunning(); })
+					.then(function(running) {
+						if (running && running.dae)
+							return fs.exec(backend.BACKENDS.dae.initd, ['hot_reload']).then(function(res) {
+								subStatus.textContent = (res && res.code !== 0) ? _('Saved, reload failed') : _('Saved and applied');
+							});
+						subStatus.textContent = _('Saved, start dae to apply');
+					})
+					.catch(function(e) { subStatus.textContent = _('Failed') + ': ' + (e.message || e); })
+					.finally(function() {
+						subApply.disabled = false;
+						setTimeout(function() { subStatus.classList.remove('show'); }, 4000);
+					});
+			});
+			return E('div', { 'class': 'dd-sub-card' }, [
+				E('div', { 'class': 'dd-sub-card-title' }, _('Subscription Management')),
+				E('div', { 'class': 'dd-sub-row' }, [subInput, subApply, subStatus])
+			]);
+		})(),
+		(function() {
+			var adv = E('div', { 'class': 'dd-adv dd-closed', style: 'margin-top:8px' }, [
+				E('div', { 'class': 'dd-adv-bar' }, [
+					E('span', {}, _('Configuration Editor')),
+					E('span', { 'class': 'dd-adv-chevron' }, '›')
+				]),
+				E('div', { 'class': 'dd-adv-body' }, [
+					E('div', { 'class': 'dd-editor-hint', style: 'margin:0 0 10px' }, [
+						E('b', {}, _('Text-only mode.')),
+						' ',
+						_('Edit config DSL — subscriptions, nodes, routing, DNS. Load template via Initialize. Replace placeholder URL before saving. Switch to daed for GUI.')
+					]),
+					phWarn,
+					textarea,
+					footer,
+					E('div', { 'class': 'dd-editor-actions' }, [ save, init, insertSelect, status ])
+				])
+			]);
+			adv.firstChild.addEventListener('click', function() { adv.classList.toggle('dd-closed'); });
+			return adv;
+		})(),
+		(function() {
+			var body = E('div', { 'class': 'dd-adv-body' }, E('em', {}, _('Loading…')));
+			var adv2 = E('div', { 'class': 'dd-adv dd-closed', style: 'margin-top:4px' }, [
+				E('div', { 'class': 'dd-adv-bar' }, [
+					E('span', {}, _('dae Parameters')),
+					E('span', { 'class': 'dd-adv-chevron' }, '›')
+				]),
+				body
+			]);
+			adv2.firstChild.addEventListener('click', function() { adv2.classList.toggle('dd-closed'); });
+			renderDaeSettings().then(function(node) {
+				while (body.firstChild) body.removeChild(body.firstChild);
+				body.appendChild(node);
+			});
+			return adv2;
+		})()
 	]);
 }
 
@@ -723,7 +812,6 @@ return view.extend({
 			children.push(E('div', { 'class': 'dd-card dd-warning' }, _('Selected backend is not installed. Install dae or daed from the package feed first.')));
 		} else if (ctx.name === 'dae') {
 			children.push(renderDaeEditor());
-			children.push(renderDaeSettings());
 		} else {
 			children.push(renderDaedSettings());
 		}

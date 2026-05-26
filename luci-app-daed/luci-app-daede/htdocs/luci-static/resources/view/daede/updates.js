@@ -35,8 +35,9 @@ const CSS = [
 	'.dd-up-btn:hover{background:rgba(128,128,128,.12)}',
 	'.dd-up-btn:disabled{opacity:.45;cursor:not-allowed}',
 	'.dd-up-btn-primary{border-color:#4aa065;color:#4aa065}',
-	'.dd-up-log{margin-top:10px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11px;background:#1a1d21;color:#d8dde6;padding:10px;border-radius:6px;max-height:200px;overflow:auto;white-space:pre-wrap;word-break:break-all;display:none}',
+	'.dd-up-log{margin-top:10px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11px;padding:10px;border:1px solid rgba(128,128,128,.14);border-radius:8px;max-height:200px;overflow:auto;white-space:pre-wrap;word-break:break-all;display:none;background:inherit;color:#4a8c63}',
 	'.dd-up-log.show{display:block}',
+		'body.dark .dd-up-log,html[data-theme="dark"] .dd-up-log,html[data-bs-theme="dark"] .dd-up-log{color:#a3d9ad}',
 	/* 手风琴折叠组 —— 与 config.js dd-adv 同构 */
 	'.dd-adv{margin-bottom:14px}',
 	'.dd-adv-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;cursor:pointer;user-select:none;font-size:11.5px;font-weight:600;background:rgba(128,128,128,.04);border:1px solid rgba(0,0,0,.06);border-radius:10px;color:inherit;letter-spacing:.3px;text-transform:uppercase;opacity:.7;box-shadow:0 2px 8px rgba(0,0,0,.03)}',
@@ -128,16 +129,9 @@ return view.extend({
 			btn.textContent = '...';
 			return fs.exec('/usr/share/luci-app-daede/update-geo.sh', [kind]).then(function(res) {
 				if (res.code === 0) {
-					ui.addNotification(null, E('p', _('%s download started — will refresh in 1–3 min.').format(label)), 'info');
 					setTimeout(function() { tailLog('/tmp/luci-app-daede.' + kind + '.log', logPane); }, 2000);
-				} else if (res.code === 75) {
-					ui.addNotification(null, E('p', _('%s update already running.').format(label)), 'warning');
-				} else {
-					ui.addNotification(null, E('p', _('%s update failed: %s').format(label, res.stderr || res.stdout || ('exit ' + res.code))), 'danger');
 				}
-			}).catch(function(e) {
-				ui.addNotification(null, E('p', _('%s update error: %s').format(label, e)), 'danger');
-			}).finally(function() {
+			}).catch(function() {}).finally(function() {
 				btn.disabled = false;
 				btn.textContent = _('Update');
 			});
@@ -151,16 +145,9 @@ return view.extend({
 			btn.textContent = '...';
 			return fs.exec('/usr/share/luci-app-daede/update-pkg.sh', [pkg]).then(function(res) {
 				if (res.code === 0) {
-					ui.addNotification(null, E('p', _('%s upgrade started — see log below.').format(pkg)), 'info');
 					setTimeout(function() { tailLog('/tmp/luci-app-daede.pkg-' + pkg + '.log', logPane); }, 3000);
-				} else if (res.code === 75) {
-					ui.addNotification(null, E('p', _('%s upgrade already running.').format(pkg)), 'warning');
-				} else {
-					ui.addNotification(null, E('p', _('%s upgrade failed: %s').format(pkg, res.stderr || res.stdout || ('exit ' + res.code))), 'danger');
 				}
-			}).catch(function(e) {
-				ui.addNotification(null, E('p', _('%s upgrade error: %s').format(pkg, e)), 'danger');
-			}).finally(function() {
+			}).catch(function() {}).finally(function() {
 				btn.disabled = false;
 				btn.textContent = _('Upgrade');
 			});
@@ -221,7 +208,7 @@ return view.extend({
 				}).concat([
 					{ k: 'luci-app-daede', name: 'luci-app-daede', r: luci }
 				]).forEach(function(entry) {
-					const btn = E('button', { 'class': 'dd-up-btn' }, _('Upgrade'));
+					const btn = E('button', { 'class': 'dd-up-btn dd-up-btn-primary' }, _('Upgrade'));
 					btn.addEventListener('click', function() { upgradePkg(entry.k, btn); });
 					const sameVersion = entry.r.installed && entry.r.latest && entry.r.installed === entry.r.latest;
 					const updatable = entry.r.installed && entry.r.latest && entry.r.installed !== entry.r.latest;
@@ -234,8 +221,7 @@ return view.extend({
 						meta = _('installed') + ': ' + entry.r.installed + ' · ' + _('up to date');
 					} else if (updatable) {
 						meta = _('installed') + ': ' + entry.r.installed + ' → ' + _('latest') + ': ' + entry.r.latest;
-						btn.classList.add('dd-up-btn-primary');
-					} else {
+						} else {
 						meta = _('installed') + ': ' + entry.r.installed + (entry.r.latest ? ' · ' + _('latest') + ': ' + entry.r.latest : '');
 					}
 					pkgBody.appendChild(mkRow(
@@ -278,9 +264,7 @@ return view.extend({
 					const btn = E('button', { 'class': 'dd-up-btn' }, _('Clean'));
 					btn.addEventListener('click', function() {
 						btn.disabled = true;
-						fs.exec('/sbin/ip', ['netns', 'del', 'daens']).then(function(res) {
-							ui.addNotification(null, E('p', res.code === 0 ? _('netns daens removed.') : (res.stderr || res.stdout || 'failed')), res.code === 0 ? 'info' : 'warning');
-						}).finally(function() { btn.disabled = false; });
+						fs.exec('/sbin/ip', ['netns', 'del', 'daens']).finally(function() { btn.disabled = false; });
 					});
 					healthBody.appendChild(mkRow('⚠', 'dd-up-warn', _('netns daens'), HEALTH_PATHS.netns + ' · ' + _('exists, may block daed start'), btn));
 				} else if (ctx.backend.useNetns) {

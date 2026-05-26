@@ -54,6 +54,24 @@ if ! uci -q get daede.config >/dev/null 2>&1; then
 	uci -q commit daede
 fi
 
+# Remove --disable-timestamp from dae init so log lines carry timestamps
+DAE_INIT="/etc/init.d/dae"
+if [ -f "$DAE_INIT" ]; then
+	sed -i 's/--disable-timestamp//' "$DAE_INIT"
+	sed -i '/procd_append_param command *$/d' "$DAE_INIT"
+fi
+
+# dae expects geoip.dat / geosite.dat under /usr/share/dae/;
+# v2ray-geoip installs them to /usr/share/v2ray/. Create symlinks.
+if [ -f /usr/share/v2ray/geoip.dat ] && [ ! -f /usr/share/dae/geoip.dat ]; then
+	mkdir -p /usr/share/dae
+	ln -sf /usr/share/v2ray/geoip.dat /usr/share/dae/geoip.dat
+fi
+if [ -f /usr/share/v2ray/geosite.dat ] && [ ! -f /usr/share/dae/geosite.dat ]; then
+	mkdir -p /usr/share/dae
+	ln -sf /usr/share/v2ray/geosite.dat /usr/share/dae/geosite.dat
+fi
+
 INIT="/etc/init.d/daed"
 MARKER="# luci-app-daede: netns-cleanup"
 

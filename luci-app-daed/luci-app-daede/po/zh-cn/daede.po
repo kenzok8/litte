@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
-"Language: zh-cn\n"
+"Language: zh-Hans\n"
 "MIME-Version: 1.0\n"
 "Content-Transfer-Encoding: 8bit\n"
 
@@ -124,11 +124,11 @@ msgid "Log Advanced Settings"
 msgstr "日志高级设置"
 
 # ---- config.js: dae Settings ----
-msgid "dae Settings"
-msgstr "dae 设置"
+msgid "dae Parameters"
+msgstr "dae 参数"
 
-msgid "eBPF-based Linux high-performance transparent proxy solution."
-msgstr "基于 eBPF 的 Linux 高性能透明代理。"
+msgid "Configuration file path and log rotation settings for dae."
+msgstr "dae 配置文件路径与日志轮转参数。"
 
 msgid "Configuration File"
 msgstr "配置文件"
@@ -145,6 +145,13 @@ msgstr "dae 没有内置 WebUI，下面的 DSL 配置需要手工编辑（订阅
 
 msgid "dae config file is empty. Click \"Initialize from example\" to start, or paste your config here."
 msgstr "dae 配置文件为空。点「从示例初始化」开始，或直接粘贴你的配置。"
+
+# ---- config.js: dae Parameters ----
+msgid "dae Parameters"
+msgstr "dae 参数"
+
+msgid "Edit config DSL — subscriptions, nodes, routing, DNS. Load template via Initialize. Replace placeholder URL before saving. Switch to daed for GUI."
+msgstr "编辑 dae DSL 配置——订阅、节点、路由、DNS。通过「从示例初始化」载入模板。保存前务必替换占位订阅链接。图形化管理请切换至 daed。"
 
 msgid "Save and Hot Reload"
 msgstr "保存并热重载"
@@ -378,3 +385,56 @@ msgstr "清空文件"
 
 msgid "Download"
 msgstr "下载"
+
+# ---- config.js: Subscription Card ----
+msgid "Subscription Management"
+msgstr "订阅管理"
+
+msgid "Paste subscription URL here"
+msgstr "在此粘贴订阅链接"
+
+msgid "Apply and Save"
+msgstr "应用并保存"
+
+msgid "Applying…"
+msgstr "应用…"
+
+msgid "Saved, start dae to apply"
+msgstr "已保存，启动 dae 后生效"
+
+msgid "Saved and applied"
+msgstr "已保存并应用"
+
+msgid "Saved, reload failed"
+msgstr "已保存，重载失败"
+
+msgid "Not found, load example first"
+msgstr "未找到订阅行，请先载入示例"
+
+msgid "Failed"
+msgstr "失败"
+
+msgid "This will replace your current config. Continue?"
+msgstr "这将覆盖当前配置，继续？"
+
+msgid "Example loaded — save to apply"
+msgstr "示例已载入，保存后生效"
+
+msgid "Saved OK (start dae to apply)"
+msgstr "已保存（启动 dae 后生效）"
+
+msgid "Configuration Editor"
+msgstr "配置编辑"
+
+msgid "Edit config DSL — subscriptions, nodes, routing, DNS. Load template via Initialize. Replace placeholder URL before saving. Switch to daed for GUI."
+msgstr "编辑 dae DSL 配置——订阅、节点、路由、DNS。通过「从示例初始化」载入模板。保存前务必替换占位订阅链接。图形化管理请切换至 daed。"
+
+# ---- config.js: Proxy Health ----
+msgid "Check Proxy Status"
+msgstr "检测代理状态"
+
+msgid "OK, %d flows through proxy"
+msgstr "正常，%d 条代理流量"
+
+msgid "No proxy traffic"
+msgstr "暂无代理流量"

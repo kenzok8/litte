@@ -167,12 +167,9 @@ return view.extend({
 			if (!confirm(_('Truncate %s log on the router? This cannot be undone.').format(ctx.name)))
 				return;
 			fs.write(LOG_PATH, '').then(function() {
-				ui.addNotification(null, E('p', _('Log file cleared.')), 'info');
 				state.lastContent = '';
 				state.lastSize = 0;
-			}).catch(function(e) {
-				ui.addNotification(null, E('p', _('Failed to clear log: %s').format(e)), 'danger');
-			});
+			}).catch(function() {});
 		});
 
 		function applyFilter() {
