@@ -137,9 +137,16 @@ return view.extend({
 			state.paused = cbPause.checked;
 		});
 
-		const inFilter = E('input', { 'type': 'text', 'placeholder': _('Filter (substring)') });
-		inFilter.addEventListener('input', function() {
-			state.filter = inFilter.value.toLowerCase();
+		const selFilter = E('select', { 'class': 'dd-log-btn' }, [
+			E('option', { 'value': '' }, _('All')),
+			E('option', { 'value': 'info' }, 'INFO'),
+			E('option', { 'value': 'warn' }, 'WARN'),
+			E('option', { 'value': 'error' }, 'ERROR'),
+			E('option', { 'value': 'alive' }, _('Node Status')),
+			E('option', { 'value': 'my_group' }, _('Proxy Traffic'))
+		]);
+		selFilter.addEventListener('change', function() {
+			state.filter = selFilter.value;
 			applyFilter();
 		});
 
@@ -264,7 +271,7 @@ return view.extend({
 		const toolbar = E('div', { 'class': 'dd-log-toolbar' }, [
 			E('label', {}, [ cbAuto, _('Auto-scroll') ]),
 			E('label', {}, [ cbPause, _('Pause') ]),
-			inFilter,
+			selFilter,
 			btnClear,
 			btnDownload,
 			btnTruncate,

@@ -374,8 +374,14 @@ msgstr "自动滚动"
 msgid "Pause"
 msgstr "暂停"
 
-msgid "Filter (substring)"
-msgstr "过滤（子串）"
+msgid "All"
+msgstr "全部"
+
+msgid "Node Status"
+msgstr "节点状态"
+
+msgid "Proxy Traffic"
+msgstr "代理流量"
 
 msgid "Clear View"
 msgstr "清空显示"
