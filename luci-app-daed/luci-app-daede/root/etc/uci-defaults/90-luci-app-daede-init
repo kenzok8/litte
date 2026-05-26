@@ -71,6 +71,14 @@ if [ -f /usr/share/v2ray/geosite.dat ] && [ ! -f /usr/share/dae/geosite.dat ]; t
 	mkdir -p /usr/share/dae
 	ln -sf /usr/share/v2ray/geosite.dat /usr/share/dae/geosite.dat
 fi
+if [ -f /usr/share/v2ray/geoip.dat ] && [ ! -f /usr/share/daed/geoip.dat ]; then
+	mkdir -p /usr/share/daed
+	ln -sf /usr/share/v2ray/geoip.dat /usr/share/daed/geoip.dat
+fi
+if [ -f /usr/share/v2ray/geosite.dat ] && [ ! -f /usr/share/daed/geosite.dat ]; then
+	mkdir -p /usr/share/daed
+	ln -sf /usr/share/v2ray/geosite.dat /usr/share/daed/geosite.dat
+fi
 
 INIT="/etc/init.d/daed"
 MARKER="# luci-app-daede: netns-cleanup"

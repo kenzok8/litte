@@ -62,7 +62,7 @@ define Package/$(PKG_NAME)/install
 	$(INSTALL_DATA) ./root/etc/config/daede $(1)/etc/config/daede
 
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
-	$(INSTALL_BIN) ./root/etc/uci-defaults/90-luci-app-daede-init-fix $(1)/etc/uci-defaults/90-luci-app-daede-init-fix
+	$(INSTALL_BIN) ./root/etc/uci-defaults/90-luci-app-daede-init $(1)/etc/uci-defaults/90-luci-app-daede-init
 
 	$(INSTALL_DIR) $(1)/usr/share/luci/menu.d
 	$(INSTALL_DATA) ./root/usr/share/luci/menu.d/luci-app-daede.json $(1)/usr/share/luci/menu.d/luci-app-daede.json
@@ -85,9 +85,9 @@ endef
 define Package/$(PKG_NAME)/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	if [ -x /etc/uci-defaults/90-luci-app-daede-init-fix ]; then
-		( . /etc/uci-defaults/90-luci-app-daede-init-fix )
-		rm -f /etc/uci-defaults/90-luci-app-daede-init-fix
+	if [ -x /etc/uci-defaults/90-luci-app-daede-init ]; then
+		( . /etc/uci-defaults/90-luci-app-daede-init )
+		rm -f /etc/uci-defaults/90-luci-app-daede-init
 	fi
 	rm -f /usr/lib/lua/luci/i18n/daed.zh-cn.lmo
 	rm -rf /tmp/luci-indexcache /tmp/luci-indexcache.* /tmp/luci-modulecache
