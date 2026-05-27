@@ -96,7 +96,7 @@ jobs:
 
           # 模拟：用错误的 commit（比如 v3.3.5 的 commit）来计算 hash
           # 这个 commit 对应的是旧版本
-          WRONG_COMMIT="d07728ecb78a33d8ff6c5e0e98cb66a45557a1d1"  # v3.3.5
+          WRONG_COMMIT="8285e5a7de093b8ae5a2ca68f7108e6f273092b1"  # v3.3.5 tag
           WRONG_VER="3.3.5"
 
           PKG_NAME=shadowsocks-libev
