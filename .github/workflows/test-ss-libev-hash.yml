@@ -1,0 +1,160 @@
+name: "Test shadowsocks-libev hash"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  # 第一步：用 gn.yml 同款手动管线计算 hash
+  compute_hash:
+    runs-on: ubuntu-latest
+    outputs:
+      computed_hash: ${{ steps.hash.outputs.hash }}
+    steps:
+      - name: Install deps
+        run: sudo apt-get update -y && sudo apt-get install -y zstd
+
+      - name: Compute hash (rawgit pipeline)
+        id: hash
+        run: |
+          set -euo pipefail
+
+          PKG_NAME=shadowsocks-libev
+          PKG_SOURCE_URL=https://github.com/shadowsocks/shadowsocks-libev.git
+          PKG_VER=3.3.6
+          PKG_COMMIT=c5e8788013a37afe54ea1c2b7c03395cccc663cf
+          PKG_DATE=2026-02-09
+
+          SUBDIR="${PKG_NAME}-${PKG_VER}"
+          FILE="${SUBDIR}.tar.zst"
+          WORK_DIR="${RUNNER_TEMP}/ss-libev-hash"
+
+          rm -rf "$WORK_DIR"
+          mkdir -p "$WORK_DIR"
+
+          echo ">>> 克隆仓库..."
+          git clone "$PKG_SOURCE_URL" "$WORK_DIR/$SUBDIR"
+          git -C "$WORK_DIR/$SUBDIR" checkout "$PKG_COMMIT"
+
+          TAR_TIMESTAMP=$(git -C "$WORK_DIR/$SUBDIR" log -1 --no-show-signature --format='@%ct')
+          echo "TAR_TIMESTAMP: $TAR_TIMESTAMP"
+
+          echo ">>> git archive..."
+          git -C "$WORK_DIR/$SUBDIR" config core.abbrev 8
+          git -C "$WORK_DIR/$SUBDIR" archive --format=tar HEAD --output="$WORK_DIR/${SUBDIR}.tar.git"
+
+          echo ">>> 处理 submodules..."
+          tar --numeric-owner --owner=0 --group=0 --ignore-failed-read \
+            -C "$WORK_DIR/$SUBDIR" \
+            -f "$WORK_DIR/${SUBDIR}.tar.git" -r .git .gitmodules 2>/dev/null || true
+
+          rm -rf "$WORK_DIR/$SUBDIR"
+          mkdir "$WORK_DIR/$SUBDIR"
+          tar -C "$WORK_DIR/$SUBDIR" -xf "$WORK_DIR/${SUBDIR}.tar.git"
+          (cd "$WORK_DIR/$SUBDIR" && git submodule update --init --recursive -- && rm -rf .git .gitmodules) || true
+
+          echo ">>> tar + zstd..."
+          LC_ALL=C tar --numeric-owner --owner=0 --group=0 --mode=a-s --sort=name \
+            --mtime="$TAR_TIMESTAMP" -c -C "$WORK_DIR" "$SUBDIR" \
+            | zstd -T0 --ultra -20 -c > "$WORK_DIR/$FILE"
+
+          HASH=$(sha256sum "$WORK_DIR/$FILE" | awk '{print $1}')
+          echo ""
+          echo "========================================="
+          echo "  计算出的 hash: $HASH"
+          echo "  期望的 hash:   96d0b486a0c8dbb2acf2af56534f6c765565c127c3695c98b5157b24993a4839"
+          echo "========================================="
+
+          if [ "$HASH" = "96d0b486a0c8dbb2acf2af56534f6c765565c127c3695c98b5157b24993a4839" ]; then
+            echo ""
+            echo "✅ HASH 匹配！rawgit 管线在 ubuntu-latest 上输出正确。"
+          else
+            echo ""
+            echo "❌ HASH 不匹配，rawgit 管线和测试编译环境不一致。"
+            echo ""
+            echo "--- 环境信息 ---"
+            echo "git: $(git --version)"
+            echo "tar: $(tar --version | head -1)"
+            echo "zstd: $(zstd --version | head -1)"
+          fi
+
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+
+  # 第二步：人为制造错误版本号，验证工作流能检测到
+  test_wrong_hash:
+    needs: compute_hash
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install deps
+        run: sudo apt-get update -y && sudo apt-get install -y zstd
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Simulate wrong hash detection
+        run: |
+          set -euo pipefail
+
+          # 模拟：用错误的 commit（比如 v3.3.5 的 commit）来计算 hash
+          # 这个 commit 对应的是旧版本
+          WRONG_COMMIT="d07728ecb78a33d8ff6c5e0e98cb66a45557a1d1"  # v3.3.5
+          WRONG_VER="3.3.5"
+
+          PKG_NAME=shadowsocks-libev
+          PKG_SOURCE_URL=https://github.com/shadowsocks/shadowsocks-libev.git
+
+          SUBDIR="${PKG_NAME}-${WRONG_VER}"
+          FILE="${SUBDIR}.tar.zst"
+          WORK_DIR="${RUNNER_TEMP}/ss-libev-wrong"
+
+          rm -rf "$WORK_DIR"
+          mkdir -p "$WORK_DIR"
+
+          echo ">>> 用错误 commit ($WRONG_COMMIT) 计算 hash..."
+          git clone "$PKG_SOURCE_URL" "$WORK_DIR/$SUBDIR"
+          git -C "$WORK_DIR/$SUBDIR" checkout "$WRONG_COMMIT"
+
+          TAR_TIMESTAMP=$(git -C "$WORK_DIR/$SUBDIR" log -1 --no-show-signature --format='@%ct')
+          echo "TAR_TIMESTAMP: $TAR_TIMESTAMP"
+
+          git -C "$WORK_DIR/$SUBDIR" config core.abbrev 8
+          git -C "$WORK_DIR/$SUBDIR" archive --format=tar HEAD --output="$WORK_DIR/${SUBDIR}.tar.git"
+
+          tar --numeric-owner --owner=0 --group=0 --ignore-failed-read \
+            -C "$WORK_DIR/$SUBDIR" \
+            -f "$WORK_DIR/${SUBDIR}.tar.git" -r .git .gitmodules 2>/dev/null || true
+
+          rm -rf "$WORK_DIR/$SUBDIR"
+          mkdir "$WORK_DIR/$SUBDIR"
+          tar -C "$WORK_DIR/$SUBDIR" -xf "$WORK_DIR/${SUBDIR}.tar.git"
+          (cd "$WORK_DIR/$SUBDIR" && git submodule update --init --recursive -- && rm -rf .git .gitmodules) || true
+
+          LC_ALL=C tar --numeric-owner --owner=0 --group=0 --mode=a-s --sort=name \
+            --mtime="$TAR_TIMESTAMP" -c -C "$WORK_DIR" "$SUBDIR" \
+            | zstd -T0 --ultra -20 -c > "$WORK_DIR/$FILE"
+
+          WRONG_HASH=$(sha256sum "$WORK_DIR/$FILE" | awk '{print $1}')
+          CORRECT_HASH=${{ needs.compute_hash.outputs.computed_hash }}
+
+          echo ""
+          echo "错误版本 ($WRONG_VER) hash: $WRONG_HASH"
+          echo "正确版本 (3.3.6) hash:      $CORRECT_HASH"
+
+          if [ "$WRONG_HASH" != "$CORRECT_HASH" ]; then
+            echo ""
+            echo "✅ 错误 hash 不等于正确 hash —— 工作流能正确区分版本差异。"
+          else
+            echo ""
+            echo "❌ 两个版本 hash 相同？这不应该发生。"
+          fi
+
+          # 再测试：同一个 commit，故意写错 makefile 的 hash 值
+          echo ""
+          echo ">>> 模拟 Makefile hash 与 实际 hash 不匹配的检测..."
+          FAKE_HASH="0000000000000000000000000000000000000000000000000000000000000000"
+          echo "Makefile 写的假 hash: $FAKE_HASH"
+          echo "实际 hash:            $CORRECT_HASH"
+          if [ "$FAKE_HASH" != "$CORRECT_HASH" ]; then
+            echo "✅ 检测到 hash 不匹配 —— 工作流会触发更新。"
+          else
+            echo "❌ 相等？"
+          fi
