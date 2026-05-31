@@ -42,6 +42,8 @@ GO_PKG_TAGS:=embedallowed,trace
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/bpf.mk
 include $(TOPDIR)/feeds/packages/lang/golang/golang-package.mk
+# daed go.mod requires go >= 1.24, override GOTOOLCHAIN to allow auto-download
+GO_PKG_BUILD_VARS := $(filter-out GOTOOLCHAIN=%,$(GO_PKG_BUILD_VARS)) GOTOOLCHAIN=auto
 
 TAR_CMD=$(HOST_TAR) -C $(BUILD_DIR)/ $(TAR_OPTIONS)
 
