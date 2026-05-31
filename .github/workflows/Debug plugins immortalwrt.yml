@@ -41,6 +41,7 @@ jobs:
       - name: Setup feeds
         run: |
           cd sdk
+          cp feeds.conf.default feeds.conf
           echo "src-link packages_ci ${{ github.workspace }}" >> feeds.conf
           ./scripts/feeds update -a
           for PKG in ${{ github.event.inputs.plugins }}; do
