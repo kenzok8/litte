@@ -18,6 +18,7 @@ jobs:
         sdk:
           - 24.10.5
           - 24.10.6
+          - 25.12.0
         arch:
           - aarch64_cortex-a53
           - x86_64
@@ -77,11 +78,16 @@ jobs:
               echo "PKG_ARCH=${{ matrix.arch }}" >> $GITHUB_OUTPUT
               ;;
           esac
+          # GCC version depends on SDK major
+          case "${{ matrix.sdk }}" in
+            25.*) echo "GCC_VER=14.3.0" >> $GITHUB_OUTPUT ;;
+            *)    echo "GCC_VER=13.3.0" >> $GITHUB_OUTPUT ;;
+          esac
 
       - name: Build with immortalwrt SDK
         run: |
           set -e
-          SDK_URL="https://downloads.immortalwrt.org/releases/${{ matrix.sdk }}/targets/${{ steps.archmap.outputs.SDKDIR }}/immortalwrt-sdk-${{ matrix.sdk }}-${{ steps.archmap.outputs.SDKFILE }}_gcc-13.3.0_musl.Linux-x86_64.tar.zst"
+          SDK_URL="https://downloads.immortalwrt.org/releases/${{ matrix.sdk }}/targets/${{ steps.archmap.outputs.SDKDIR }}/immortalwrt-sdk-${{ matrix.sdk }}-${{ steps.archmap.outputs.SDKFILE }}_gcc-${{ steps.archmap.outputs.GCC_VER }}_musl.Linux-x86_64.tar.zst"
           echo "Downloading: $SDK_URL"
           wget -q --show-progress "$SDK_URL" -O sdk.tar.zst
           mkdir -p sdk
@@ -172,7 +178,10 @@ jobs:
           echo -e "**文件说明** 🙈:\n" >> release.txt
           echo -e "1. 支持编译单个或者多个插件\n" >> release.txt
           echo -e "2. 手动启动编译:${{ github.event.inputs.plugins }}\n" >> release.txt
-          echo -e "3. immortalwrt 24.10 使用：\`opkg install *.ipk\` 或 \`apk add --allow-untrusted ./*.apk\`\n" >> release.txt
+          case "${{ matrix.sdk }}" in
+            25.*) echo -e "3. immortalwrt ${{ matrix.sdk }} 使用：\`apk add --allow-untrusted ./*.apk\`\n" >> release.txt ;;
+            *)    echo -e "3. immortalwrt ${{ matrix.sdk }} 使用：\`opkg install *.ipk\`\n" >> release.txt ;;
+          esac
           echo -e "4. 如果单独安装ssr与依赖，\`rm -rf {*passwall*,*bypass*}\`\n" >> release.txt
 
       - name: Upload packages
