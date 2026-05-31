@@ -16,8 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         sdk:
-          - 24.10.5
-          - 24.10.6
+          - 24.10
           - 25.12.0
         arch:
           - aarch64_cortex-a53
@@ -34,126 +33,47 @@ jobs:
           input="${{ github.event.inputs.plugins }}"
 
           if [ -z "$input" ] || [ "$input" == "*" ]; then
-            # 编译所有包
             PACKAGES=$(find . -maxdepth 1 -type d ! -name '.' ! -name '.git' ! -name '.github' -printf '%f ' | sed 's/ $//')
             echo "编译所有包: $PACKAGES"
             echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
           elif [ "$input" == "1" ]; then
-            # 最近1天有更新的包
             SINCE_DAYS=1
             echo "编译最近 $SINCE_DAYS 天更新的包..."
             PACKAGES=$(git log --since="${SINCE_DAYS} days ago" --name-only --pretty=format: | grep -v '^$' | awk -F'/' '{print $1}' | sort -u | grep -v '^\.\|^$' | tr '\n' ' ' | sed 's/ $//')
             echo "最近1天更新的包: $PACKAGES"
             echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
           elif [ "$input" == "2" ]; then
-            # 最近2天有更新的包
             SINCE_DAYS=2
             echo "编译最近 $SINCE_DAYS 天更新的包..."
             PACKAGES=$(git log --since="${SINCE_DAYS} days ago" --name-only --pretty=format: | grep -v '^$' | awk -F'/' '{print $1}' | sort -u | grep -v '^\.\|^$' | tr '\n' ' ' | sed 's/ $//')
             echo "最近2天更新的包: $PACKAGES"
             echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
           else
-            # 编译指定包
             echo "编译指定包: $input"
             echo "packages=$input" >> $GITHUB_OUTPUT
           fi
 
-      - name: Map arch to immortalwrt SDK path
-        id: archmap
-        run: |
-          case "${{ matrix.arch }}" in
-            x86_64)
-              echo "SDKDIR=x86/64" >> $GITHUB_OUTPUT
-              echo "SDKFILE=x86-64" >> $GITHUB_OUTPUT
-              echo "PKG_ARCH=x86_64" >> $GITHUB_OUTPUT
-              ;;
-            aarch64_cortex-a53)
-              echo "SDKDIR=armsr/armv8" >> $GITHUB_OUTPUT
-              echo "SDKFILE=armsr-armv8" >> $GITHUB_OUTPUT
-              echo "PKG_ARCH=aarch64_generic" >> $GITHUB_OUTPUT
-              ;;
-            *)
-              echo "SDKDIR=${{ matrix.arch }}" >> $GITHUB_OUTPUT
-              echo "SDKFILE=${{ matrix.arch }}" >> $GITHUB_OUTPUT
-              echo "PKG_ARCH=${{ matrix.arch }}" >> $GITHUB_OUTPUT
-              ;;
-          esac
-          # GCC version depends on SDK major
-          case "${{ matrix.sdk }}" in
-            25.*) echo "GCC_VER=14.3.0" >> $GITHUB_OUTPUT ;;
-            *)    echo "GCC_VER=13.3.0" >> $GITHUB_OUTPUT ;;
-          esac
-
-      - name: Build with immortalwrt SDK
-        run: |
-          set -e
-          SDK_URL="https://downloads.immortalwrt.org/releases/${{ matrix.sdk }}/targets/${{ steps.archmap.outputs.SDKDIR }}/immortalwrt-sdk-${{ matrix.sdk }}-${{ steps.archmap.outputs.SDKFILE }}_gcc-${{ steps.archmap.outputs.GCC_VER }}_musl.Linux-x86_64.tar.zst"
-          echo "Downloading: $SDK_URL"
-          wget -q --show-progress "$SDK_URL" -O sdk.tar.zst
-          mkdir -p sdk
-          tar -I zstd -xf sdk.tar.zst -C sdk --strip-components=1
-          rm sdk.tar.zst
-
-          cd sdk
-          cp feeds.conf.default feeds.conf
-          echo "src-link packages_ci ${{ github.workspace }}" >> feeds.conf
-          ./scripts/feeds update -a
-
-          HAS_PKG=0
-          for PKG in ${{ steps.packages.outputs.packages }}; do
-            if [ -d "${{ github.workspace }}/$PKG" ]; then
-              ./scripts/feeds install -p packages_ci -f "$PKG" || continue
-              HAS_PKG=1
-            else
-              echo "Skipping $PKG: not found"
-            fi
-          done
-
-          if [ "$HAS_PKG" -eq 0 ]; then
-            echo "No packages to build"
-            exit 0
-          fi
-
-          make defconfig
-
-          make \
-            -f .config \
-            -f tmp/.packagedeps \
-            -f <(echo "\$(info \$(sort \$(package-y) \$(package-m)))"; echo -en "a:\n\t@:") \
-              | tr ' ' '\n' > enabled-package-subdirs.txt
-
-          for PKG in ${{ steps.packages.outputs.packages }}; do
-            if [ ! -d "${{ github.workspace }}/$PKG" ]; then
-              continue
-            fi
-            if ! grep -qE "(^|/)$PKG$" enabled-package-subdirs.txt 2>/dev/null; then
-              echo "::warning file=$PKG::Skipping $PKG due to unsupported architecture"
-              continue
-            fi
-            echo "::group::Build $PKG"
-            make package/$PKG/download V=s || true
-            make package/$PKG/check V=s
-            make package/$PKG/compile V=s -j$(nproc) || echo "::warning file=$PKG::$PKG build failed, continuing..."
-            echo "::endgroup::"
-          done
-
-          # build package index
-          make package/index V=s 2>/dev/null || true
-        shell: bash
+      - name: Build
+        uses: immortalwrt/gh-action-sdk@master
+        env:
+          ARCH: ${{ matrix.arch }}-openwrt-${{ matrix.sdk }}
+          FEEDNAME: packages_ci
+          PACKAGES: ${{ steps.packages.outputs.packages }}
+          NO_REFRESH_CHECK: true
+          IGNORE_ERRORS: true
+          INDEX: 1
 
       - name: Detect built package files
         id: detect_packages
         run: |
-          PKG_ARCH="${{ steps.archmap.outputs.PKG_ARCH }}"
           shopt -s nullglob
-          files=(sdk/bin/packages/${PKG_ARCH}/packages_ci/*.ipk sdk/bin/packages/${PKG_ARCH}/packages_ci/*.apk)
+          files=(bin/packages/${{ matrix.arch }}/packages_ci/*.ipk bin/packages/${{ matrix.arch }}/packages_ci/*.apk)
           if [ ${#files[@]} -gt 0 ]; then
             echo "has_packages=true" >> $GITHUB_OUTPUT
             printf '%s\n' "${files[@]}"
           else
             echo "has_packages=false" >> $GITHUB_OUTPUT
             echo "No ipk/apk output found for: ${{ github.event.inputs.plugins }}"
-            echo "Host-only packages are expected to have no package artifacts."
           fi
 
       - name: Store packages
@@ -162,15 +82,14 @@ jobs:
         with:
           name: ${{ matrix.arch }}-${{ matrix.sdk }}
           path: |
-            sdk/bin/packages/${{ steps.archmap.outputs.PKG_ARCH }}/packages_ci/*.ipk
-            sdk/bin/packages/${{ steps.archmap.outputs.PKG_ARCH }}/packages_ci/*.apk
+            bin/packages/${{ matrix.arch }}/packages_ci/*.ipk
+            bin/packages/${{ matrix.arch }}/packages_ci/*.apk
 
       - name: Zip packages
         if: steps.detect_packages.outputs.has_packages == 'true'
         run: |
-          PKG_ARCH="${{ steps.archmap.outputs.PKG_ARCH }}"
           shopt -s nullglob
-          packages=(sdk/bin/packages/${PKG_ARCH}/packages_ci/*.ipk sdk/bin/packages/${PKG_ARCH}/packages_ci/*.apk)
+          packages=(bin/packages/${{ matrix.arch }}/packages_ci/*.ipk bin/packages/${{ matrix.arch }}/packages_ci/*.apk)
           tar -zcvf ${{ matrix.arch }}-${{ matrix.sdk }}.tar.gz "${packages[@]}"
           mkdir -p release-assets
           cp "${packages[@]}" release-assets/
