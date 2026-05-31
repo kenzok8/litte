@@ -27,9 +27,11 @@ jobs:
 
       - name: Download immortalwrt SDK
         run: |
-          ARCH_PATH="${{ github.event.inputs.arch }}"
-          echo "ARCH_PATH=$ARCH_PATH" >> $GITHUB_ENV
-          SDK_URL="https://downloads.immortalwrt.org/releases/${{ github.event.inputs.sdk }}/targets/${ARCH_PATH}/64/immortalwrt-sdk-${{ github.event.inputs.sdk }}-${ARCH_PATH}-64_gcc-13.3.0_musl.Linux-x86_64.tar.zst"
+          # immortalwrt dir layout: /targets/x86/64, filename: ...-x86-64_...
+          SDKDIR="x86/64"
+          SDKFILE="x86-64"
+          echo "ARCH_PATH=x86_64" >> $GITHUB_ENV
+          SDK_URL="https://downloads.immortalwrt.org/releases/${{ github.event.inputs.sdk }}/targets/${SDKDIR}/immortalwrt-sdk-${{ github.event.inputs.sdk }}-${SDKFILE}_gcc-13.3.0_musl.Linux-x86_64.tar.zst"
           echo "Downloading: $SDK_URL"
           wget -q --show-progress "$SDK_URL" -O sdk.tar.zst
           mkdir -p sdk
