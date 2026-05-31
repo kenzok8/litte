@@ -16,8 +16,8 @@ jobs:
       fail-fast: false
       matrix:
         sdk:
-          - 24.10.4
-          - 25.12.0
+          - 24.10.5
+          - 24.10.6
         arch:
           - aarch64_cortex-a53
           - x86_64
@@ -31,7 +31,7 @@ jobs:
         id: packages
         run: |
           input="${{ github.event.inputs.plugins }}"
-          
+
           if [ -z "$input" ] || [ "$input" == "*" ]; then
             # 编译所有包
             PACKAGES=$(find . -maxdepth 1 -type d ! -name '.' ! -name '.git' ! -name '.github' -printf '%f ' | sed 's/ $//')
@@ -57,28 +57,97 @@ jobs:
             echo "packages=$input" >> $GITHUB_OUTPUT
           fi
 
-      - name: Build
-        uses: kenzok8/gh-action-sdk@hash
-        env:
-          ARCH: ${{ matrix.arch }}-${{ matrix.sdk }}
-          FEEDNAME: packages_ci
-          PACKAGES: ${{ steps.packages.outputs.packages }}
-          NO_REFRESH_CHECK: true
-          IGNORE_ERRORS: true
-          INDEX: 1
+      - name: Map arch to immortalwrt SDK path
+        id: archmap
+        run: |
+          case "${{ matrix.arch }}" in
+            x86_64)
+              echo "SDKDIR=x86/64" >> $GITHUB_OUTPUT
+              echo "SDKFILE=x86-64" >> $GITHUB_OUTPUT
+              echo "PKG_ARCH=x86_64" >> $GITHUB_OUTPUT
+              ;;
+            aarch64_cortex-a53)
+              echo "SDKDIR=armsr/armv8" >> $GITHUB_OUTPUT
+              echo "SDKFILE=armsr-armv8" >> $GITHUB_OUTPUT
+              echo "PKG_ARCH=aarch64_generic" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "SDKDIR=${{ matrix.arch }}" >> $GITHUB_OUTPUT
+              echo "SDKFILE=${{ matrix.arch }}" >> $GITHUB_OUTPUT
+              echo "PKG_ARCH=${{ matrix.arch }}" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+      - name: Build with immortalwrt SDK
+        run: |
+          set -e
+          SDK_URL="https://downloads.immortalwrt.org/releases/${{ matrix.sdk }}/targets/${{ steps.archmap.outputs.SDKDIR }}/immortalwrt-sdk-${{ matrix.sdk }}-${{ steps.archmap.outputs.SDKFILE }}_gcc-13.3.0_musl.Linux-x86_64.tar.zst"
+          echo "Downloading: $SDK_URL"
+          wget -q --show-progress "$SDK_URL" -O sdk.tar.zst
+          mkdir -p sdk
+          tar -I zstd -xf sdk.tar.zst -C sdk --strip-components=1
+          rm sdk.tar.zst
+
+          cd sdk
+          cp feeds.conf.default feeds.conf
+          echo "src-link packages_ci ${{ github.workspace }}" >> feeds.conf
+          ./scripts/feeds update -a
+
+          HAS_PKG=0
+          for PKG in ${{ steps.packages.outputs.packages }}; do
+            if [ -d "${{ github.workspace }}/$PKG" ]; then
+              ./scripts/feeds install -p packages_ci -f "$PKG" || continue
+              HAS_PKG=1
+            else
+              echo "Skipping $PKG: not found"
+            fi
+          done
+
+          if [ "$HAS_PKG" -eq 0 ]; then
+            echo "No packages to build"
+            exit 0
+          fi
+
+          make defconfig
+
+          make \
+            -f .config \
+            -f tmp/.packagedeps \
+            -f <(echo "\$(info \$(sort \$(package-y) \$(package-m)))"; echo -en "a:\n\t@:") \
+              | tr ' ' '\n' > enabled-package-subdirs.txt
+
+          for PKG in ${{ steps.packages.outputs.packages }}; do
+            if [ ! -d "${{ github.workspace }}/$PKG" ]; then
+              continue
+            fi
+            if ! grep -qE "(^|/)$PKG$" enabled-package-subdirs.txt 2>/dev/null; then
+              echo "::warning file=$PKG::Skipping $PKG due to unsupported architecture"
+              continue
+            fi
+            echo "::group::Build $PKG"
+            make package/$PKG/download V=s || true
+            make package/$PKG/check V=s
+            make package/$PKG/compile V=s -j$(nproc) || echo "::warning file=$PKG::$PKG build failed, continuing..."
+            echo "::endgroup::"
+          done
+
+          # build package index
+          make package/index V=s 2>/dev/null || true
+        shell: bash
 
       - name: Detect built package files
         id: detect_packages
         run: |
+          PKG_ARCH="${{ steps.archmap.outputs.PKG_ARCH }}"
           shopt -s nullglob
-          files=(bin/packages/${{ matrix.arch }}/packages_ci/*.ipk bin/packages/${{ matrix.arch }}/packages_ci/*.apk)
+          files=(sdk/bin/packages/${PKG_ARCH}/packages_ci/*.ipk sdk/bin/packages/${PKG_ARCH}/packages_ci/*.apk)
           if [ ${#files[@]} -gt 0 ]; then
             echo "has_packages=true" >> $GITHUB_OUTPUT
             printf '%s\n' "${files[@]}"
           else
             echo "has_packages=false" >> $GITHUB_OUTPUT
             echo "No ipk/apk output found for: ${{ github.event.inputs.plugins }}"
-            echo "Host-only packages (for example gn) are expected to have no package artifacts."
+            echo "Host-only packages are expected to have no package artifacts."
           fi
 
       - name: Store packages
@@ -87,14 +156,15 @@ jobs:
         with:
           name: ${{ matrix.arch }}-${{ matrix.sdk }}
           path: |
-            bin/packages/${{ matrix.arch }}/packages_ci/*.ipk
-            bin/packages/${{ matrix.arch }}/packages_ci/*.apk
+            sdk/bin/packages/${{ steps.archmap.outputs.PKG_ARCH }}/packages_ci/*.ipk
+            sdk/bin/packages/${{ steps.archmap.outputs.PKG_ARCH }}/packages_ci/*.apk
 
       - name: Zip packages
         if: steps.detect_packages.outputs.has_packages == 'true'
         run: |
+          PKG_ARCH="${{ steps.archmap.outputs.PKG_ARCH }}"
           shopt -s nullglob
-          packages=(bin/packages/${{ matrix.arch }}/packages_ci/*.ipk bin/packages/${{ matrix.arch }}/packages_ci/*.apk)
+          packages=(sdk/bin/packages/${PKG_ARCH}/packages_ci/*.ipk sdk/bin/packages/${PKG_ARCH}/packages_ci/*.apk)
           tar -zcvf ${{ matrix.arch }}-${{ matrix.sdk }}.tar.gz "${packages[@]}"
           mkdir -p release-assets
           cp "${packages[@]}" release-assets/
@@ -102,9 +172,8 @@ jobs:
           echo -e "**文件说明** 🙈:\n" >> release.txt
           echo -e "1. 支持编译单个或者多个插件\n" >> release.txt
           echo -e "2. 手动启动编译:${{ github.event.inputs.plugins }}\n" >> release.txt
-          echo -e "3. OpenWrt 24.10 使用：\`opkg install *.ipk\`\n" >> release.txt
-          echo -e "4. OpenWrt 25.12 使用：\`apk add --allow-untrusted ./*.apk\`\n" >> release.txt
-          echo -e "5. 如果单独安装ssr与依赖，\`rm -rf {*passwall*,*bypass*}\`\n" >> release.txt
+          echo -e "3. immortalwrt 24.10 使用：\`opkg install *.ipk\` 或 \`apk add --allow-untrusted ./*.apk\`\n" >> release.txt
+          echo -e "4. 如果单独安装ssr与依赖，\`rm -rf {*passwall*,*bypass*}\`\n" >> release.txt
 
       - name: Upload packages
         if: steps.detect_packages.outputs.has_packages == 'true'
@@ -121,6 +190,7 @@ jobs:
         if: steps.detect_packages.outputs.has_packages != 'true'
         run: |
           echo "Skip artifact/release upload because no ipk/apk was produced."
+
       - name: Remove old Releases
         env:
           GH_TOKEN: ${{ secrets.ACCESS_TOKEN }}
