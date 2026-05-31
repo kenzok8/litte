@@ -1,0 +1,69 @@
+name: Debug plugins build (immortalwrt)
+
+on:
+  workflow_dispatch:
+    inputs:
+      plugins:
+        description: '输入要编译的插件名，空格分隔'
+        required: true
+        default: 'daed'
+      arch:
+        description: '架构'
+        required: true
+        default: 'x86_64'
+      sdk:
+        description: 'SDK 版本'
+        required: true
+        default: '24.10.5'
+
+jobs:
+  build:
+    name: build ${{ github.event.inputs.arch }}-${{ github.event.inputs.sdk }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Download immortalwrt SDK
+        run: |
+          ARCH_PATH="${{ github.event.inputs.arch }}"
+          echo "ARCH_PATH=$ARCH_PATH" >> $GITHUB_ENV
+          SDK_URL="https://downloads.immortalwrt.org/releases/${{ github.event.inputs.sdk }}/targets/${ARCH_PATH}/64/immortalwrt-sdk-${{ github.event.inputs.sdk }}-${ARCH_PATH}-64_gcc-13.3.0_musl.Linux-x86_64.tar.zst"
+          echo "Downloading: $SDK_URL"
+          wget -q --show-progress "$SDK_URL" -O sdk.tar.zst
+          mkdir -p sdk
+          tar -I zstd -xf sdk.tar.zst -C sdk --strip-components=1
+          rm sdk.tar.zst
+
+      - name: Setup feeds
+        run: |
+          cd sdk
+          echo "src-link packages_ci ${{ github.workspace }}" >> feeds.conf
+          ./scripts/feeds update -a
+          for PKG in ${{ github.event.inputs.plugins }}; do
+            ./scripts/feeds install -p packages_ci -f "$PKG"
+          done
+          make defconfig
+
+      - name: Build packages
+        run: |
+          cd sdk
+          for PKG in ${{ github.event.inputs.plugins }}; do
+            echo "::group::Build $PKG"
+            make package/$PKG/download V=s
+            make package/$PKG/check V=s
+            make package/$PKG/compile V=s -j$(nproc)
+            echo "::endgroup::"
+          done
+
+      - name: Store packages
+        if: always()
+        uses: actions/upload-artifact@v7.0.0
+        with:
+          name: immortalwrt-${{ github.event.inputs.arch }}-${{ github.event.inputs.sdk }}
+          path: |
+            sdk/bin/packages/${{ env.ARCH_PATH }}/packages_ci/*.ipk
+            sdk/bin/packages/${{ env.ARCH_PATH }}/packages_ci/*.apk
+            sdk/logs/**
+          if-no-files-found: ignore
