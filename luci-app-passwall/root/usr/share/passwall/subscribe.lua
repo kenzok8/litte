@@ -1651,9 +1651,6 @@ local function curl(url, file, ua, mode)
 	ua = (ua and ua ~= "") and ua or "passwall"
 	ua = (ua == "passwall") and ("passwall/" .. api.get_version()) or ua
 	curl_args[#curl_args + 1] = '--user-agent "' .. ua .. '"'
-	if not ua:lower():find("clash", 1, true) then
-		curl_args[#curl_args + 1] = get_headers()
-	end
 
 	local return_code, result
 	if mode == "direct" then
@@ -1678,57 +1675,6 @@ local function curl(url, file, ua, mode)
 	end
 
 	return return_code, http_code, header_str
-end
-
-function get_headers()
-	local cache_file = "/tmp/etc/" .. appname .. "_tmp/sub_curl_headers"
-	if fs.access(cache_file) then
-		return luci.sys.exec("cat " .. cache_file)
-	end
-	local headers = {}
-
-	local function readfile(path)
-		local f = io.open(path, "r")
-		if not f then return nil end
-		local c = f:read("*a")
-		f:close()
-		return api.trim(c)
-	end
-
-	headers[#headers + 1] = "x-device-os: OpenWrt"
-
-	local rel = readfile("/etc/openwrt_release")
-	local os_ver = rel and rel:match("DISTRIB_RELEASE='([^']+)'")
-	if os_ver then
-		headers[#headers + 1] = "x-ver-os: " .. os_ver
-	end
-
-	local model = readfile("/tmp/sysinfo/model")
-	if model then
-		headers[#headers + 1] = "x-device-model: " .. model
-	end
-
-	local mac = readfile("/sys/class/net/eth0/address")
-	if mac and model then
-		local raw = mac .. "-" .. model
-		local p = io.popen("printf '%s' '" .. raw:gsub("'", "'\\''") .. "' | sha256sum")
-		if p then
-			local hash = p:read("*l")
-			p:close()
-			hash = hash and hash:match("^%w+")
-			if hash then
-				headers[#headers + 1] = "x-hwid: " .. hash
-			end
-		end
-	end
-
-	local out = {}
-	for i = 1, #headers do
-		out[i] = "-H '" .. headers[i]:gsub("'", "'\\''") .. "'"
-	end
-	local headers_str = table.concat(out, " ")
-	local f = io.open(cache_file, "w"); if f then f:write(headers_str); f:close() end
-	return headers_str
 end
 
 local function truncate_nodes(group)
