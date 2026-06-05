@@ -34,6 +34,9 @@ jobs:
           NO_REFRESH_CHECK: true
           IGNORE_ERRORS: false
           INDEX: 1
+          # Swap bundled Go 1.23 for self-maintained Go 1.26.3 (sing-box 1.13+ needs >= 1.24.7)
+          GOLANG_REPO: https://github.com/kenzok8/golang
+          GOLANG_BRANCH: '1.26'
 
       - name: Store packages
         if: always()
