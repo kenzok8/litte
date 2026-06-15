@@ -1,8 +1,5 @@
 #!/bin/sh
-# Refresh the package index in the background so the Updates view reflects newly
-# released versions without the user running `apk update` elsewhere. Returns
-# immediately; the next poll cycle reads the refreshed index. Throttled to avoid
-# hammering the feeds on repeated page loads.
+# Background apk/opkg update for the Updates view. Returns at once; throttled.
 
 LOCK=/tmp/luci-app-daede.idx.lock
 
@@ -13,8 +10,9 @@ fi
 : > "$LOCK"
 
 (
+	# -n: skip if a package op holds the shared apk lock (no need to refresh then)
 	if command -v apk >/dev/null 2>&1; then
-		apk update
+		flock -n /tmp/luci-app-daede.apk.lock apk update
 	elif command -v opkg >/dev/null 2>&1; then
 		opkg update
 	fi

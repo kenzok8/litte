@@ -13,6 +13,16 @@ case "$PKG" in
 		;;
 esac
 
+# run from a /tmp copy so upgrading luci-app-daede (which replaces this script)
+# can't corrupt the in-flight upgrade
+case "$0" in
+	/tmp/.daede-upd-*) ;;
+	*)
+		_self="/tmp/.daede-upd-$$"
+		cp "$0" "$_self" 2>/dev/null && exec sh "$_self" "$@"
+		;;
+esac
+
 LOCK="/tmp/luci-app-daede.pkg-${PKG}.lock"
 LOG="/tmp/luci-app-daede.pkg-${PKG}.log"
 
@@ -33,20 +43,27 @@ fi
 
 (
 	exec >"$LOG" 2>&1
-	trap 'rm -f "$LOCK"' EXIT INT TERM
+	trap 'rm -f "$LOCK"; [ "${0#/tmp/.daede-upd-}" != "$0" ] && rm -f "$0"' EXIT INT TERM
 
 	echo "$(date '+%F %T') begin upgrade: $PKG"
 
 	if command -v apk >/dev/null 2>&1; then
-		echo "--- apk update ---"
-		apk update 2>&1
-		echo "--- apk add $PKG ---"
-		# Target only $PKG (not `apk upgrade`, which re-solves the whole world).
-		apk add "$PKG" 2>&1
-		# Don't trust apk's exit code: apk-tools 3 returns non-zero whenever ANY
-		# unrelated installed package has an unavailable .apk in the configured
-		# feeds, even when $PKG itself upgraded fine. Judge success by state —
-		# $PKG must be installed and have no pending upgrade left.
+		# shared apk lock with the bg index refresh (avoid "Unable to lock database")
+		(
+			flock 9
+			apk update 2>&1
+			# pin exact latest version + --force-broken-world so unrelated broken
+			# packages can't block this upgrade (cf. clashoo component_update)
+			ver=$(apk list "$PKG" 2>/dev/null | awk -v p="$PKG" '$1 ~ "^" p "-[0-9]" { v=$1; sub("^" p "-", "", v); print v }' | sort -V | tail -1)
+			if [ -n "$ver" ]; then
+				echo "--- apk add $PKG=$ver ---"
+				apk add "$PKG=$ver" --force-broken-world 2>&1
+			else
+				echo "--- apk add $PKG ---"
+				apk add "$PKG" --force-broken-world 2>&1
+			fi
+		) 9>/tmp/luci-app-daede.apk.lock
+		# apk's exit code is unreliable (broken-world noise); judge by state instead
 		if ! apk list --installed 2>/dev/null | grep -q "^${PKG}-"; then
 			echo "result: $PKG is not installed"
 			rc=1
