@@ -1,12 +1,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=trojan-plus
-PKG_VERSION:=10.0.5
+PKG_VERSION:=10.0.6
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/kenzok8/trojan-plus/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=3c2e3841a7384613aa264e10a30a2143b8756cabf63f4706a49aa1826f4949c2
+PKG_HASH:=ca23338ca8e6e2e564d1faab16bf93dbb2d3de69c3bceeb5c1b58587fa3a1f08
 
 PKG_BUILD_PARALLEL:=1
 PKG_BUILD_DEPENDS:=openssl
