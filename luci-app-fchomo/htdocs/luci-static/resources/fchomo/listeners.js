@@ -545,13 +545,41 @@ function renderListeners(s, uciconfig, isClient) {
 	/* ShadowQUIC fields */
 	o = s.taboption('field_general', form.DynamicList, 'shadowquic_quic_versions', _('QUIC versions'),
 		_('Default version, Support %s.').format('v1/v2'));
-	o.default = 'v1';
-	o.rmempty = false;
+	o.placeholder = 'v1';
 	o.depends('type', 'shadowquic');
 	o.modalonly = true;
 
 	o = s.taboption('field_general', form.Flag, 'shadowquic_zero_rtt', _('QUIC based 0-RTT'));
 	o.default = o.disabled;
+	o.depends('type', 'shadowquic');
+	o.modalonly = true;
+
+	o = s.taboption('field_general', form.Value, 'shadowquic_cwnd', _('Initial congestion window size'));
+	o.datatype = 'uinteger';
+	o.placeholder = '32';
+	o.depends('type', 'shadowquic');
+	o.modalonly = true;
+
+	o = s.taboption('field_general', form.Value, 'shadowquic_max_datagram_frame_size', _('Max datagram frame size'));
+	o.datatype = 'uinteger';
+	o.placeholder = '1400';
+	o.depends('type', 'shadowquic');
+	o.modalonly = true;
+
+	o = s.taboption('field_general', form.Value, 'shadowquic_recv_window_conn', _('Stream-level receive window size'));
+	o.datatype = 'uinteger';
+	o.placeholder = '0';
+	o.depends('type', 'shadowquic');
+	o.modalonly = true;
+
+	o = s.taboption('field_general', form.Value, 'shadowquic_recv_window', _('Connection-level receive window size'));
+	o.datatype = 'uinteger';
+	o.placeholder = '0';
+	o.depends('type', 'shadowquic');
+	o.modalonly = true;
+
+	o = s.taboption('field_general', form.Flag, 'shadowquic_mtu_discovery', _('Path MTU Discovery'));
+	o.default = o.enabled;
 	o.depends('type', 'shadowquic');
 	o.modalonly = true;
 
@@ -659,7 +687,7 @@ function renderListeners(s, uciconfig, isClient) {
 					' / ' + _('JLS'));
 			}
 			if (['vmess', 'vless', 'trojan', 'anytls'].includes(type) && !['shadow-tls', 'restls', 'jls'].includes(value)) {
-				return _('Expecting: only support %s.').format(_('ShadowTLS') +
+				return _('Expecting: Only support %s.').format(_('ShadowTLS') +
 					' / ' + _('Restls') +
 					' / ' + _('JLS'));
 			}
@@ -1214,7 +1242,7 @@ function renderListeners(s, uciconfig, isClient) {
 		value = this.formvalue(section_id);
 
 		if (value == 1 && ['shadow-tls', 'restls', 'jls'].includes(plugin_type))
-			return _('Expecting: cannot be enabled when %s is enabled.').format(_('ShadowTLS') +
+			return _('Expecting: Cannot be enabled when %s is enabled.').format(_('ShadowTLS') +
 				' / ' + _('Restls') +
 				' / ' + _('JLS'));
 

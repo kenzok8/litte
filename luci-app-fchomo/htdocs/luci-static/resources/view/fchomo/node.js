@@ -720,8 +720,7 @@ return view.extend({
 		/* ShadowQUIC fields */
 		so = ss.taboption('field_general', form.DynamicList, 'shadowquic_quic_versions', _('QUIC versions'),
 			_('Support %s, default %s.').format('v1/v2', 'v1'));
-		so.default = 'v1';
-		so.rmempty = false;
+		so.placeholder = 'v1';
 		so.depends('type', 'shadowquic');
 		so.modalonly = true;
 
@@ -739,6 +738,35 @@ return view.extend({
 			_('In millisecond.'));
 		so.datatype = 'uinteger';
 		so.placeholder = '10000';
+		so.depends('type', 'shadowquic');
+		so.modalonly = true;
+
+		so = ss.taboption('field_general', form.Value, 'shadowquic_cwnd', _('Initial congestion window size'));
+		so.datatype = 'uinteger';
+		so.placeholder = '32';
+		so.depends('type', 'shadowquic');
+		so.modalonly = true;
+
+		so = ss.taboption('field_general', form.Value, 'shadowquic_max_datagram_frame_size', _('Max datagram frame size'));
+		so.datatype = 'uinteger';
+		so.placeholder = '1400';
+		so.depends('type', 'shadowquic');
+		so.modalonly = true;
+
+		so = ss.taboption('field_general', form.Value, 'shadowquic_recv_window_conn', _('Stream-level receive window size'));
+		so.datatype = 'uinteger';
+		so.placeholder = '0';
+		so.depends('type', 'shadowquic');
+		so.modalonly = true;
+
+		so = ss.taboption('field_general', form.Value, 'shadowquic_recv_window', _('Connection-level receive window size'));
+		so.datatype = 'uinteger';
+		so.placeholder = '0';
+		so.depends('type', 'shadowquic');
+		so.modalonly = true;
+
+		so = ss.taboption('field_general', form.Flag, 'shadowquic_mtu_discovery', _('Path MTU Discovery'));
+		so.default = so.enabled;
 		so.depends('type', 'shadowquic');
 		so.modalonly = true;
 
@@ -942,7 +970,7 @@ return view.extend({
 			_('The default value is <code>%s</code>, indicating that only the outer connection timeout is used.').format('0'));
 		so.datatype = 'uinteger';
 		so.placeholder = '30';
-		so.depends({type: /^(openvpn|masque)$/});
+		so.depends({type: /^(hysteria2|openvpn|masque)$/});
 		so.modalonly = true;
 
 		so = ss.taboption('field_general', form.Flag, 'udp', _('UDP'));
@@ -990,7 +1018,7 @@ return view.extend({
 						' / ' + _('JLS'));
 				}
 				if (['vmess', 'vless', 'trojan', 'anytls'].includes(type) && !['shadow-tls', 'restls', 'jls'].includes(value)) {
-					return _('Expecting: only support %s.').format(_('ShadowTLS') +
+					return _('Expecting: Only support %s.').format(_('ShadowTLS') +
 						' / ' + _('Restls') +
 						' / ' + _('JLS'));
 				}
@@ -1317,7 +1345,7 @@ return view.extend({
 			value = this.formvalue(section_id);
 
 			if (value == 1 && ['shadow-tls', 'restls', 'jls'].includes(plugin_type))
-				return _('Expecting: cannot be enabled when %s is enabled.').format(_('ShadowTLS') +
+				return _('Expecting: Cannot be enabled when %s is enabled.').format(_('ShadowTLS') +
 					' / ' + _('Restls') +
 					' / ' + _('JLS'));
 
