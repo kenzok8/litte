@@ -13,7 +13,7 @@ PKG_SOURCE_URL:=https://github.com/Itsusinn/tuic.git
 PKG_SOURCE_DATE:=2026-07-29
 PKG_SOURCE_VERSION:=8e3e9fb8814a6af2d10aaee0372aeb7002018c96
 PKG_SOURCE_SUBMODULES:=crates/wind
-PKG_MIRROR_HASH:=skip
+PKG_MIRROR_HASH:=e7c521ad44dfd89533900bad819703509cc8ceef422ccb7c3a2d92e2195d3a0c
 
 PKG_MAINTAINER:=Tianling Shen <cnsztl@immortalwrt.org>
 PKG_LICENSE:=GPL-3.0-or-later
