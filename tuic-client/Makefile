@@ -5,16 +5,18 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=tuic-client
-PKG_VERSION:=1.8.11
+PKG_VERSION:=2.0.0-dev1
 PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://codeload.github.com/Itsusinn/tuic/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=4513c9add6b3a1ffb49026d7308fe488b33e8b0b2d3d1f1c89c06768b479b56a
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_URL:=https://github.com/Itsusinn/tuic.git
+PKG_SOURCE_DATE:=2026-07-29
+PKG_SOURCE_VERSION:=8e3e9fb8814a6af2d10aaee0372aeb7002018c96
+PKG_SOURCE_SUBMODULES:=crates/wind
+PKG_MIRROR_HASH:=skip
 
 PKG_MAINTAINER:=Tianling Shen <cnsztl@immortalwrt.org>
-PKG_LICENSE:=GPL-3.0-only
+PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=LICENSE
 
 include $(INCLUDE_DIR)/package.mk
