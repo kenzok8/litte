@@ -30,8 +30,12 @@ jobs:
           # immortalwrt dir layout: /targets/x86/64, filename: ...-x86-64_...
           SDKDIR="x86/64"
           SDKFILE="x86-64"
+          case "${{ github.event.inputs.sdk }}" in
+            25.*) GCC_VERSION="14.3.0" ;;
+            *) GCC_VERSION="13.3.0" ;;
+          esac
           echo "ARCH_PATH=x86_64" >> $GITHUB_ENV
-          SDK_URL="https://downloads.immortalwrt.org/releases/${{ github.event.inputs.sdk }}/targets/${SDKDIR}/immortalwrt-sdk-${{ github.event.inputs.sdk }}-${SDKFILE}_gcc-13.3.0_musl.Linux-x86_64.tar.zst"
+          SDK_URL="https://downloads.immortalwrt.org/releases/${{ github.event.inputs.sdk }}/targets/${SDKDIR}/immortalwrt-sdk-${{ github.event.inputs.sdk }}-${SDKFILE}_gcc-${GCC_VERSION}_musl.Linux-x86_64.tar.zst"
           echo "Downloading: $SDK_URL"
           wget -q --show-progress "$SDK_URL" -O sdk.tar.zst
           mkdir -p sdk
