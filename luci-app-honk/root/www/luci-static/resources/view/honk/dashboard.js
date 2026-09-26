@@ -331,15 +331,15 @@ return view.extend({
 		]);
 
 		var statusServicePill = E('span', { 'class': 'label success' }, _('Running'));
-		var statusEndpointPill = E('span', { 'class': 'label notice', 'style': 'font-family: monospace;' });
+		var statusEndpointPill = E('span', { 'class': 'label notice', 'style': 'font-family: monospace; text-transform: none !important;' });
 		var tokenText = E('span', {
-			'style': 'user-select: all; -webkit-user-select: all; font-weight: bold;',
+			'style': 'user-select: all; -webkit-user-select: all; font-weight: bold; text-transform: none !important;',
 			'title': _('Click or drag to select Token')
 		});
 		var tokenPill = E('span', {
 			'class': 'label info',
-			'style': 'font-family: monospace; display: none; padding: 2px 6px;'
-		}, [ 'Token: ', tokenText ]);
+			'style': 'font-family: monospace; display: none; padding: 2px 6px; text-transform: none !important;'
+		}, [ _('Token: '), tokenText ]);
 		var btnExternalOpen = E('a', { 'href': '#', 'target': '_blank', 'class': 'cbi-button cbi-button-action', 'title': _('Open independently in a new tab') }, _('New Tab'));
 		var iframe = E('iframe', { 'id': 'dash_iframe', 'src': 'about:blank', 'allow': 'fullscreen; clipboard-read; clipboard-write' });
 
