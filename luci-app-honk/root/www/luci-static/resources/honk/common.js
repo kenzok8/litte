@@ -94,6 +94,23 @@ function isServiceEnabled() {
 	return ((sections[0] || {}).enabled === '1');
 }
 
+function updateStatus(data, targetEl) {
+	var el = targetEl || document.getElementById('honk_status');
+	if (!el) return;
+	if (data && data.running) {
+		var mem = data.memory ? ' (' + _('Memory Usage') + ': ' + data.memory + ')' : '';
+		dom.content(el, [
+			E('span', { 'style': 'color: var(--success, #22c55e); font-weight: bold;' }, _('HONK') + ' ' + _('RUNNING')),
+			' ',
+			E('span', { 'style': 'color: var(--text-muted, #888); font-size: 0.9em;' }, mem)
+		]);
+	} else {
+		dom.content(el, [
+			E('span', { 'style': 'color: var(--danger, #ef4444); font-weight: bold;' }, _('HONK') + ' ' + _('NOT RUNNING'))
+		]);
+	}
+}
+
 function waitForHonkState(wantRunning, attempts) {
 	attempts = attempts || 10;
 
@@ -104,15 +121,19 @@ function waitForHonkState(wantRunning, attempts) {
 			callHonkStatus().then(function(st) {
 				var running = !!(st && st.running);
 
-				if (running === wantRunning || ++tries >= attempts)
-					resolve({ running: running });
-				else
+				if (running === wantRunning || ++tries >= attempts) {
+					updateStatus(st);
+					resolve({ running: running, memory: st ? st.memory : null });
+				} else {
 					setTimeout(step, 1200);
+				}
 			}).catch(function() {
-				if (++tries >= attempts)
+				if (++tries >= attempts) {
+					updateStatus({ running: false });
 					resolve({ running: null });
-				else
+				} else {
 					setTimeout(step, 1200);
+				}
 			});
 		}
 
@@ -621,6 +642,7 @@ function createConfigFileView(filePath, mapTitle, mapDesc, fieldTitle, successMs
 						return { skipped: true };
 
 					return needRestart ? waitForHonkState(true) : callHonkStatus().then(function(st) {
+						updateStatus(st);
 						return { running: !!(st && st.running) };
 					});
 				}).then(function(st) {
@@ -750,30 +772,18 @@ function renderStatusHeader() {
 		])
 	]);
 
-	function updateStatus(data) {
-		if (!statusEl) return;
-		if (data && data.running) {
-			var mem = data.memory ? ' (' + _('Memory Usage') + ': ' + data.memory + ')' : '';
-			dom.content(statusEl, [
-				E('span', { 'style': 'color: var(--success, #22c55e); font-weight: bold;' }, _('HONK') + ' ' + _('RUNNING')),
-				' ',
-				E('span', { 'style': 'color: var(--text-muted, #888); font-size: 0.9em;' }, mem)
-			]);
-		} else {
-			dom.content(statusEl, [
-				E('span', { 'style': 'color: var(--danger, #ef4444); font-weight: bold;' }, _('HONK') + ' ' + _('NOT RUNNING'))
-			]);
-		}
-	}
-
-	callHonkStatus().then(updateStatus);
+	callHonkStatus().then(function(st) {
+		updateStatus(st, statusEl);
+	});
 
 	var pollStatusFn = function() {
 		if (!document.body.contains(statusEl)) {
 			poll.remove(pollStatusFn);
 			return Promise.resolve();
 		}
-		return callHonkStatus().then(updateStatus).catch(function() { });
+		return callHonkStatus().then(function(st) {
+			updateStatus(st, statusEl);
+		}).catch(function() { });
 	};
 
 	poll.add(pollStatusFn, 5);
@@ -809,5 +819,6 @@ return baseclass.extend({
 	waitForHonkState: waitForHonkState,
 	switchDashboardAndWait: switchDashboardAndWait,
 	isServiceEnabled: isServiceEnabled,
-	showNotification: showNotification
+	showNotification: showNotification,
+	updateStatus: updateStatus
 });
