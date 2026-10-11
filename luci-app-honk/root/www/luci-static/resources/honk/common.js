@@ -111,6 +111,32 @@ function updateStatus(data, targetEl) {
 	}
 }
 
+// Register a poll function operating on `el` and unregister it once `el` is gone.
+// poll.add() runs the first tick synchronously when it starts the polling loop, which
+// normally happens while the view is still being rendered, i.e. before `el` has been
+// attached to the document. Tolerate that single early tick and only give up on the
+// element once it is still missing on a later tick.
+function addElementPoll(fn, el, interval, onDetach) {
+	var missing = 0;
+
+	var pollFn = function() {
+		if (document.body.contains(el)) {
+			missing = 0;
+		} else if (++missing > 1) {
+			poll.remove(pollFn);
+			if (typeof onDetach === 'function')
+				onDetach();
+			return Promise.resolve();
+		}
+
+		return fn();
+	};
+
+	poll.add(pollFn, interval);
+
+	return pollFn;
+}
+
 function waitForHonkState(wantRunning, attempts) {
 	attempts = attempts || 10;
 
@@ -123,13 +149,17 @@ function waitForHonkState(wantRunning, attempts) {
 
 				if (running === wantRunning || ++tries >= attempts) {
 					updateStatus(st);
-					resolve({ running: running, memory: st ? st.memory : null });
+					if (poll && typeof(poll.start) === 'function')
+						poll.start();
+					resolve({ running: running });
 				} else {
 					setTimeout(step, 1200);
 				}
 			}).catch(function() {
 				if (++tries >= attempts) {
 					updateStatus({ running: false });
+					if (poll && typeof(poll.start) === 'function')
+						poll.start();
 					resolve({ running: null });
 				} else {
 					setTimeout(step, 1200);
@@ -777,16 +807,12 @@ function renderStatusHeader() {
 	});
 
 	var pollStatusFn = function() {
-		if (!document.body.contains(statusEl)) {
-			poll.remove(pollStatusFn);
-			return Promise.resolve();
-		}
 		return callHonkStatus().then(function(st) {
 			updateStatus(st, statusEl);
 		}).catch(function() { });
 	};
 
-	poll.add(pollStatusFn, 5);
+	addElementPoll(pollStatusFn, statusEl, 5);
 
 	applyTabVisibility();
 
@@ -820,5 +846,6 @@ return baseclass.extend({
 	switchDashboardAndWait: switchDashboardAndWait,
 	isServiceEnabled: isServiceEnabled,
 	showNotification: showNotification,
-	updateStatus: updateStatus
+	updateStatus: updateStatus,
+	addElementPoll: addElementPoll
 });
