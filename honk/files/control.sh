@@ -80,74 +80,74 @@ no_honk_resources() {
 		fi
 	fi
 	for link in dae0 dae0peer; do
-		ip link show "$link" >/dev/null 2>&1 && { fail "$link already exists"; return 1; }
+		ip link show "$link" >/dev/null 2>&1 && { fail "$link 已存在（上次没有正常退出），请先停止服务或执行系统恢复"; return 1; }
 	done
-	ip netns list 2>/dev/null | awk '{print $1}' | grep -qx daens && { fail "daens network namespace already exists"; return 1; }
+	ip netns list 2>/dev/null | awk '{print $1}' | grep -qx daens && { fail "daens 网络命名空间已存在，请先停止服务或执行系统恢复"; return 1; }
 	return 0
 }
 
 check_port() {
 	checked_port=${1:-$listen_port}
 	if command -v netstat >/dev/null 2>&1; then
-		netstat -lnt 2>/dev/null | awk '{print $4}' | grep -Eq "(^|:)${checked_port}$" && { fail "listen port is occupied"; return 1; }
+		netstat -lnt 2>/dev/null | awk '{print $4}' | grep -Eq "(^|:)${checked_port}$" && { fail "监听端口已被占用，请换一个端口"; return 1; }
 	elif command -v ss >/dev/null 2>&1; then
-		ss -lnt 2>/dev/null | awk '{print $4}' | grep -Eq "(^|:)${checked_port}$" && { fail "listen port is occupied"; return 1; }
+		ss -lnt 2>/dev/null | awk '{print $4}' | grep -Eq "(^|:)${checked_port}$" && { fail "监听端口已被占用，请换一个端口"; return 1; }
 	else
-		fail "netstat or ss is required for listener conflict checks"
+		fail "缺少 netstat/ss，无法检查端口占用（装 ip-full 或 net-tools）"
 		return 1
 	fi
 	return 0
 }
 
 check_network() {
-	valid_network_name || { fail "lan_network contains invalid characters"; return 1; }
-	command -v ubus >/dev/null 2>&1 || { fail "ubus unavailable for network validation"; return 1; }
-	ubus call "network.interface.$lan_network" status >/dev/null 2>&1 || { fail "configured LAN network does not exist in netifd"; return 1; }
+	valid_network_name || { fail "LAN 网络名包含非法字符"; return 1; }
+	command -v ubus >/dev/null 2>&1 || { fail "ubus 不可用，无法校验网络设置"; return 1; }
+	ubus call "network.interface.$lan_network" status >/dev/null 2>&1 || { fail "选择的 LAN 网络在 netifd 里不存在，请在服务设置里重新选择"; return 1; }
 }
 
 check_config() {
-	[ "$config_file" = /etc/honk/config.dae ] || { fail "config_file must be /etc/honk/config.dae"; return 1; }
-	[ -f /etc/honk/config.dae ] && [ ! -L /etc/honk/config.dae ] || { fail "main config must be a regular file"; return 1; }
+	[ "$config_file" = /etc/honk/config.dae ] || { fail "配置路径必须为 /etc/honk/config.dae"; return 1; }
+	[ -f /etc/honk/config.dae ] && [ ! -L /etc/honk/config.dae ] || { fail "/etc/honk/config.dae 不是普通文件（可能被替换成软链）"; return 1; }
 	case "$config_mode" in
 		manual)
-			"$HONK_CORE" config validate --config /etc/honk/config.dae >/dev/null || { fail "manual dae configuration failed static validation"; return 1; }
+			"$HONK_CORE" config validate --config /etc/honk/config.dae >/dev/null || { fail "手动模式的 config.dae 未通过静态校验，请先修正配置"; return 1; }
 			return 0
 			;;
 		managed) ;;
-		*) fail "invalid config_mode"; return 1 ;;
+		*) fail "配置模式取值非法（应为 managed 或 manual）"; return 1 ;;
 	esac
-	[ -f /etc/honk/system.dae ] && [ ! -L /etc/honk/system.dae ] || { fail "system config must be a regular file"; return 1; }
-	system_config_readonly || { fail "system config must be private (0600)"; return 1; }
-	[ -r /usr/share/doona/index.html ] || { fail "Doona UI index.html unavailable"; return 1; }
+	[ -f /etc/honk/system.dae ] && [ ! -L /etc/honk/system.dae ] || { fail "/etc/honk/system.dae 不是普通文件（可能被替换成软链）"; return 1; }
+	system_config_readonly || { fail "/etc/honk/system.dae 权限不对，应为 0600"; return 1; }
+	[ -r /usr/share/doona/index.html ] || { fail "缺少 Doona 静态文件（/usr/share/doona/index.html），请重新安装 luci-app-honk"; return 1; }
 	case "$listen_port" in
-		''|*[!0-9]*) fail "listen_port must be numeric"; return 1 ;;
+		''|*[!0-9]*) fail "监听端口必须是数字"; return 1 ;;
 	esac
-	[ "$listen_port" -ge 1024 ] && [ "$listen_port" -le 65535 ] || { fail "listen_port must be 1024-65535"; return 1; }
-	valid_clash_api || { fail "invalid Clash API settings"; return 1; }
+	[ "$listen_port" -ge 1024 ] && [ "$listen_port" -le 65535 ] || { fail "监听端口必须在 1024-65535 之间"; return 1; }
+	valid_clash_api || { fail "Clash API 设置不合法（端口 1024-65535，密钥 6-128 位）"; return 1; }
 }
 
 check_kernel() {
 	kernel=$(uname -r | cut -d- -f1)
 	major=$(printf '%s' "$kernel" | cut -d. -f1)
 	minor=$(printf '%s' "$kernel" | cut -d. -f2)
-	[ "$major" -gt 6 ] || { [ "$major" -eq 6 ] && [ "$minor" -ge 12 ]; } || { fail "Linux 6.12 or newer required"; return 1; }
-	[ -r /sys/kernel/btf/vmlinux ] || { fail "kernel BTF unavailable"; return 1; }
-	[ -d /sys/fs/bpf ] && grep -q ' /sys/fs/bpf bpf ' /proc/mounts || { fail "bpffs is not mounted at /sys/fs/bpf"; return 1; }
-	command -v ip >/dev/null 2>&1 || { fail "ip command unavailable"; return 1; }
-	command -v modprobe >/dev/null 2>&1 || { fail "modprobe unavailable"; return 1; }
-	[ -r /sys/kernel/btf/vmlinux ] || { fail "kernel BTF unavailable"; return 1; }
+	[ "$major" -gt 6 ] || { [ "$major" -eq 6 ] && [ "$minor" -ge 12 ]; } || { fail "内核版本过低，需要 Linux 6.12 或更新"; return 1; }
+	[ -r /sys/kernel/btf/vmlinux ] || { fail "内核缺少 BTF（/sys/kernel/btf/vmlinux），请换用带 BTF 的固件"; return 1; }
+	[ -d /sys/fs/bpf ] && grep -q ' /sys/fs/bpf bpf ' /proc/mounts || { fail "bpffs 未挂载到 /sys/fs/bpf，请检查内核或手工挂载"; return 1; }
+	command -v ip >/dev/null 2>&1 || { fail "缺少 ip 命令（装 ip-full）"; return 1; }
+	command -v modprobe >/dev/null 2>&1 || { fail "缺少 modprobe 命令（装 kmod）"; return 1; }
+	[ -r /sys/kernel/btf/vmlinux ] || { fail "内核缺少 BTF（/sys/kernel/btf/vmlinux），请换用带 BTF 的固件"; return 1; }
 	for module in sch_ingress cls_bpf veth nft_queue nfnetlink_queue; do
-		module_available "$module" || { fail "kernel module $module unavailable"; return 1; }
+		module_available "$module" || { fail "缺少内核模块 $module，请确认 kmod-sched-core / kmod-sched-bpf / kmod-veth / kmod-nft-queue 已安装"; return 1; }
 	done
 }
 
 check_conflicts() {
 	for process in dae daed clashoo mihomo sing-box; do
-		pidof "$process" >/dev/null 2>&1 && { fail "conflicting process $process is running"; return 1; }
+		pidof "$process" >/dev/null 2>&1 && { fail "检测到冲突进程 $process 正在运行，请先停掉它（多代理同时开会互相抢流量）"; return 1; }
 	done
 	for service in dae daed clashoo mihomo sing-box; do
 		if [ -x "/etc/init.d/$service" ] && "/etc/init.d/$service" running >/dev/null 2>&1; then
-			fail "conflicting service $service is running"
+			fail "检测到冲突服务 $service 正在运行，请先停用它（多代理同时开会互相抢流量）"
 			return 1
 		fi
 	done
@@ -234,7 +234,7 @@ lock_owner_invalid() {
 
 preflight() {
 	load_settings
-	[ "$enabled" = 1 ] && [ "$initialized" = 1 ] || { fail "package must be explicitly enabled and initialized"; return 1; }
+	[ "$enabled" = 1 ] && [ "$initialized" = 1 ] || { fail "请先在 LuCI 里启用并完成初始化"; return 1; }
 	if [ "$config_mode" = manual ]; then
 		maintenance_start_guard && check_config && check_kernel && no_honk_resources && check_conflicts
 		return $?
@@ -247,9 +247,9 @@ preflight() {
 prepare_runtime() {
 	preflight || return 1
 	for module in sch_ingress cls_bpf veth nft_queue nfnetlink_queue; do
-		module_loaded "$module" || modprobe "$module" || { fail "cannot load kernel module $module"; return 1; }
+		module_loaded "$module" || modprobe "$module" || { fail "无法加载内核模块 $module，请确认对应 kmod 包已安装"; return 1; }
 	done
-	mkdir -p /etc/honk/state || { fail "cannot create persistent state directory"; return 1; }
+	mkdir -p /etc/honk/state || { fail "无法创建状态目录（/etc/honk/state），请检查磁盘空间与权限"; return 1; }
 	chmod 0700 /etc/honk/state || return 1
 }
 
@@ -298,14 +298,14 @@ network_settings() {
 
 ensure_loopback_system() {
 	current_hash=$(sha256sum /etc/honk/system.dae 2>/dev/null | awk '{print $1}')
-	[ "$current_hash" = "$system_written_hash" ] || { fail "system config changed concurrently; refusing initialization"; return 1; }
+	[ "$current_hash" = "$system_written_hash" ] || { fail "初始化期间 system.dae 被其他进程改动，已中止"; return 1; }
 	current_listen=$(sed -n "s/^[[:space:]]*listen:[[:space:]]*'\([^']*\)'.*/\1/p" /etc/honk/system.dae | head -n 1)
 	[ "$current_listen" = "127.0.0.1:$listen_port" ] && return 0
 	temp_system=$(mktemp /etc/honk/.system.dae.XXXXXX) || return 1
 	sed "s/^[[:space:]]*listen:[[:space:]]*'[^']*'.*/        listen: '127.0.0.1:$listen_port'/" /etc/honk/system.dae > "$temp_system" || { rm -f "$temp_system"; return 1; }
 	chmod 0600 "$temp_system" || { rm -f "$temp_system"; return 1; }
 	current_hash=$(sha256sum /etc/honk/system.dae 2>/dev/null | awk '{print $1}')
-	[ "$current_hash" = "$system_written_hash" ] || { rm -f "$temp_system"; fail "system config changed concurrently; refusing initialization"; return 1; }
+	[ "$current_hash" = "$system_written_hash" ] || { rm -f "$temp_system"; fail "初始化期间 system.dae 被其他进程改动，已中止"; return 1; }
 	mv -f "$temp_system" /etc/honk/system.dae || { rm -f "$temp_system"; return 1; }
 	system_written_hash=$(sha256sum /etc/honk/system.dae | awk '{print $1}')
 }
@@ -313,7 +313,7 @@ ensure_loopback_system() {
 restore_system() {
 	[ -n "$system_written_hash" ] || return 0
 	current_hash=$(sha256sum /etc/honk/system.dae 2>/dev/null | awk '{print $1}')
-	[ "$current_hash" = "$system_written_hash" ] || { fail "system config changed concurrently; refusing rollback"; return 1; }
+	[ "$current_hash" = "$system_written_hash" ] || { fail "回滚期间 system.dae 被其他进程改动，已中止"; return 1; }
 	[ "$current_hash" != "$original_system_hash" ] || { system_written_hash=""; return 0; }
 	if [ -z "$original_system_hash" ]; then
 		rm -f /etc/honk/system.dae || return 1
@@ -323,7 +323,7 @@ restore_system() {
 	temp_restore=$(mktemp /etc/honk/.system.dae.restore.XXXXXX) || return 1
 	cp -p "$old_system" "$temp_restore" || { rm -f "$temp_restore"; return 1; }
 	current_hash=$(sha256sum /etc/honk/system.dae 2>/dev/null | awk '{print $1}')
-	[ "$current_hash" = "$system_written_hash" ] || { rm -f "$temp_restore"; fail "system config changed concurrently; refusing rollback"; return 1; }
+	[ "$current_hash" = "$system_written_hash" ] || { rm -f "$temp_restore"; fail "回滚期间 system.dae 被其他进程改动，已中止"; return 1; }
 	mv -f "$temp_restore" /etc/honk/system.dae || { rm -f "$temp_restore"; return 1; }
 	system_written_hash=""
 }
@@ -345,9 +345,9 @@ write_runtime_system() {
 	lan_ip=$2
 	system_port=${3:-$listen_port}
 	system_listen=${4:-$lan_ip}
-	valid_clash_api || { fail "invalid Clash API settings"; return 1; }
+	valid_clash_api || { fail "Clash API 设置不合法（端口 1024-65535，密钥 6-128 位）"; return 1; }
 	current_hash=$(sha256sum /etc/honk/system.dae 2>/dev/null | awk '{print $1}')
-	[ "$current_hash" = "$system_written_hash" ] || { fail "system config changed concurrently; refusing runtime config write"; return 1; }
+	[ "$current_hash" = "$system_written_hash" ] || { fail "写入运行配置时 system.dae 被其他进程改动，已中止"; return 1; }
 	temp_system=$(mktemp /etc/honk/.system.dae.XXXXXX) || return 1
 	{
 		printf "global {\n    wan_interface: auto\n    lan_interface: '%s'\n" "$lan_device"
@@ -364,7 +364,7 @@ write_runtime_system() {
 	} > "$temp_system" || { rm -f "$temp_system"; return 1; }
 	chmod 0600 "$temp_system" || { rm -f "$temp_system"; return 1; }
 	current_hash=$(sha256sum /etc/honk/system.dae 2>/dev/null | awk '{print $1}')
-	[ "$current_hash" = "$system_written_hash" ] || { rm -f "$temp_system"; fail "system config changed concurrently; refusing runtime config write"; return 1; }
+	[ "$current_hash" = "$system_written_hash" ] || { rm -f "$temp_system"; fail "写入运行配置时 system.dae 被其他进程改动，已中止"; return 1; }
 	mv -f "$temp_system" /etc/honk/system.dae || { rm -f "$temp_system"; return 1; }
 	system_written_hash=$(sha256sum /etc/honk/system.dae | awk '{print $1}')
 }
