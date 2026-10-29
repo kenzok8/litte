@@ -34,6 +34,12 @@ const callSettings = rpc.declare({
 	expect: { '': {} }
 });
 
+const callProbeSubscription = rpc.declare({
+	object: 'honk',
+	method: 'probe_subscription',
+	params: [ 'url' ],
+	expect: { '': {} }
+});
 const callAddSubscription = rpc.declare({
 	object: 'honk',
 	method: 'add_subscription',
@@ -51,6 +57,13 @@ const callImportDae = rpc.declare({
 	method: 'import_dae',
 	expect: { '': {} }
 });
+const callConfigRead = rpc.declare({ object: 'honk', method: 'config_read', expect: { '': {} } });
+const callConfigDraftRead = rpc.declare({ object: 'honk', method: 'config_draft_read', expect: { '': {} } });
+const callLanCandidates = rpc.declare({ object: 'honk', method: 'lan_candidates', expect: { '': {} } });
+const callConfigValidate = rpc.declare({ object: 'honk', method: 'config_validate', params: [ 'content' ], expect: { '': {} } });
+const callConfigSave = rpc.declare({ object: 'honk', method: 'config_save', params: [ 'content' ], expect: { '': {} } });
+const callConfigApply = rpc.declare({ object: 'honk', method: 'config_apply', expect: { '': {} } });
+const callConfigUseManaged = rpc.declare({ object: 'honk', method: 'config_use_managed', expect: { '': {} } });
 const callRepair = rpc.declare({ object: 'honk', method: 'repair', expect: { '': {} } });
 const callBackup = rpc.declare({ object: 'honk', method: 'backup', expect: { '': {} } });
 const callRestore = rpc.declare({ object: 'honk', method: 'restore', expect: { '': {} } });
@@ -85,6 +98,19 @@ function installStyles() {
 	pageStylesInstalled = true;
 }
 
+/* A core bound to 0.0.0.0 (or ::) reports a wildcard authority. A browser
+   cannot open that, but the router is still reachable at the host LuCI was
+   loaded from, so substitute that instead of hiding the panel button. */
+function wildcardHost(hostname) {
+	const name = String(hostname || '').replace(/^\[|\]$/g, '').toLowerCase();
+	return name === '0.0.0.0' || name === '::' || name === '';
+}
+
+function urlHost(hostname) {
+	const name = String(hostname || '');
+	return name.indexOf(':') >= 0 ? '[' + name.replace(/^\[|\]$/g, '') + ']' : name;
+}
+
 function localWebUi(status) {
 	if (!status || !status.initialized || !status.running || !status.api_ready || !status.api_url)
 		return null;
@@ -103,6 +129,9 @@ function localWebUi(status) {
 			url.protocol !== 'http:' && url.protocol !== 'https:' ||
 			url.username || url.password || url.search || url.hash)
 			return null;
+
+		if (wildcardHost(hostname) && window.location.hostname)
+			return url.protocol + '//' + urlHost(window.location.hostname) + ':' + port + '/ui/';
 
 		const octets = hostname.split('.');
 		let localIPv4 = false;
@@ -130,7 +159,9 @@ function localClashUi(status, secret) {
 		return null;
 	try {
 		const url = new URL(status.clash_api_url);
-		const host = url.hostname.replace(/^\[|\]$/g, '').toLowerCase();
+		const host = wildcardHost(url.hostname)
+			? String(window.location.hostname || '').replace(/^\[|\]$/g, '').toLowerCase()
+			: url.hostname.replace(/^\[|\]$/g, '').toLowerCase();
 		const port = status.clash_api_port || url.port;
 		const query = [
 			'host=' + encodeURIComponent(host),
@@ -210,6 +241,35 @@ function tokenMessage(token) {
 		dae_upload_unavailable: _('The dae upload is missing or unavailable. Upload the file again.'),
 		dae_upload_invalid: _('The uploaded dae file is invalid.'),
 		dae_upload_changed: _('The uploaded dae file changed. Upload it again.'),
+		upload_failed: _('Honk could not prepare the upload location. Check the upload directory permissions and try again.'),
+		upload_directory_unavailable: _('Honk could not prepare a private configuration upload directory.'),
+		upload_target_unavailable: _('The temporary configuration upload is unavailable. Try again.'),
+		config_too_large: _('The configuration file exceeds the 2 MiB limit.'),
+		config_applied: _('Configuration applied and Honk is running.'),
+		config_apply_failed_rolled_back: _('Honk could not start with this configuration. The previous file was restored.'),
+		config_apply_rollback_failed_snapshot_retained: _('Startup failed and the automatic rollback did not finish. The snapshot was kept; run system recovery.'),
+		config_changed_concurrently: _('The configuration changed during the operation. Nothing was applied.'),
+		config_write_failed_snapshot_retained: _('Could not write the configuration. The snapshot was kept.'),
+		service_stop_unconfirmed_snapshot_retained: _('Could not confirm that Honk stopped. The operation was aborted and the snapshot was kept.'),
+		manual_mode_required: _('Manual mode is active. Restore managed mode before using the subscription tools.'),
+		managed_edit_unavailable: _('Manual mode is active, so this tool cannot edit the configuration. Select Restore managed mode first.'),
+		managed_switch_failed_rolled_back: _('Could not switch back to managed mode. The previous configuration was restored.'),
+		managed_switch_rollback_failed_snapshot_retained: _('Switching back to managed mode failed and the rollback did not finish. The snapshot was kept.'),
+		managed_snapshot_invalid: _('The saved managed configuration is not a valid regular file.'),
+		config_draft_missing: _('There is no saved draft to apply.'),
+		config_draft_invalid: _('The saved draft is not a valid regular file.'),
+		managed_mode_restored: _('Managed mode restored.'),
+		managed_snapshot_missing: _('There is no saved managed configuration to restore.'),
+		lan_candidates_unavailable: _('Could not read the list of network interfaces.'),
+		config_read_failed: _('Honk could not read the current configuration.'),
+		config_request_invalid: _('The configuration request is empty or invalid.'),
+		config_validation_failed: _('The configuration did not pass static validation.'),
+		config_validation_unavailable: _('The core validator did not return a result.'),
+		config_saved_pending_apply: _('Configuration saved. The running service is unchanged until you apply it.'),
+		config_loaded: _('Configuration loaded.'),
+		dae_loaded: _('Configuration file loaded into the editor.'),
+		upload_ready: _('Upload location ready.'),
+		upload_cleared: _('Temporary upload cleared.'),
 		upload_unavailable: _('A private upload location could not be prepared.'),
 		settings_write_failed: _('Could not save Honk settings.'),
 		curl_missing: _('The curl command is missing. Install the curl package and try again.'),
@@ -315,9 +375,17 @@ return baseclass.extend({
 	stop: callStop,
 	restart: callRestart,
 	settings: callSettings,
+	probeSubscription: callProbeSubscription,
 	addSubscription: callAddSubscription,
 	addNodes: callAddNodes,
 	importDae: callImportDae,
+	configRead: callConfigRead,
+	configDraftRead: callConfigDraftRead,
+	lanCandidates: callLanCandidates,
+	configValidate: callConfigValidate,
+	configSave: callConfigSave,
+	configApply: callConfigApply,
+	configUseManaged: callConfigUseManaged,
 	repair: callRepair,
 	backup: callBackup,
 	restore: callRestore,

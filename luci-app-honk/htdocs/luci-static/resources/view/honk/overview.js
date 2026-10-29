@@ -232,6 +232,16 @@ return view.extend({
 			clashPortInput.value = status.clash_api_port ? String(status.clash_api_port) : '9090';
 
 			card.appendChild(E('h3', { 'class': 'honk-card-title' }, _('Service settings')));
+			/* Manual mode owns the whole runtime from config.dae, so the backend
+			   rejects these settings. Disable them here instead of failing on save. */
+			const manualMode = status.config_mode === 'manual';
+			if (manualMode) {
+				[ networkSelect, portInput, bootEnabledInput, clashEnabledInput, clashPortInput, clashSecretInput ].forEach(function(input) {
+					input.disabled = true;
+				});
+				save.disabled = true;
+				card.appendChild(E('p', { 'class': 'honk-note honk-mode-hint' }, _('Manual mode: these settings belong to config.dae, so they are read-only here. Restore managed mode on the Configuration page to change them.')));
+			}
 			if (!(data.networks || []).length)
 				networkSelect.appendChild(E('option', { 'value': '' }, _('No network interfaces found')));
 			form.appendChild(field(_('LAN network'), networkSelect));

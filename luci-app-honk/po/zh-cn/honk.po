@@ -1313,3 +1313,258 @@ msgstr "启用 Clash API 时需要设置密钥。"
 
 msgid "The secret must be 6-128 letters, numbers, dots, underscores or hyphens."
 msgstr "密钥需要 6～128 位，只能包含字母、数字、点、下划线或短横线。"
+
+msgid "Check configuration"
+msgstr "校验配置"
+
+msgid "Checking the configuration…"
+msgstr "正在校验配置…"
+
+msgid "Clash API %s"
+msgstr "Clash API %s"
+
+msgid "Configuration applied and Honk is running."
+msgstr "配置已生效，Honk 已启动。"
+
+msgid "Configuration is valid."
+msgstr "配置校验通过。"
+
+msgid "Configuration is valid: %s"
+msgstr "配置校验通过：%s"
+
+msgid "Configuration validation failed."
+msgstr "配置校验失败。"
+
+msgid "Could not load the configuration file."
+msgstr "无法载入配置文件。"
+
+msgid "Could not read the saved configuration."
+msgstr "无法读取已保存的配置。"
+
+msgid "Could not restore managed mode."
+msgstr "无法恢复托管模式。"
+
+msgid "Could not save the configuration."
+msgstr "无法保存配置。"
+
+msgid "Current configuration loaded from /etc/honk/config.dae."
+msgstr "已载入 /etc/honk/config.dae 的当前配置。"
+
+msgid "Discard the unsaved editor changes?"
+msgstr "放弃编辑器中未保存的修改？"
+
+msgid "Doona %s"
+msgstr "Doona 面板 %s"
+
+msgid "Full dae configuration"
+msgstr "完整 dae 配置"
+
+msgid "LAN %s"
+msgstr "局域网接口 %s"
+
+msgid "Line %d"
+msgstr "第 %d 行"
+
+msgid "Managed mode restored."
+msgstr "已恢复托管模式。"
+
+msgid "Managed mode: the subscription and paste-nodes tools are active. Saving here switches Honk to manual mode."
+msgstr "托管模式：订阅与粘贴节点工具可用。在这里保存会切换为手动模式。"
+
+msgid "Reading %s…"
+msgstr "正在读取 %s…"
+
+msgid "Reload from disk"
+msgstr "从磁盘重新载入"
+
+msgid "Restore managed mode"
+msgstr "恢复托管模式"
+
+msgid "Restore the managed configuration and return to the subscription tools? Honk restarts if it is running."
+msgstr "恢复之前保存的托管配置并回到订阅工具？若 Honk 正在运行会重启。"
+
+msgid "Restoring the managed configuration…"
+msgstr "正在恢复托管配置…"
+
+msgid "Save and apply"
+msgstr "保存并应用"
+
+msgid "The editor is empty."
+msgstr "编辑器内容为空。"
+
+msgid "The file is empty."
+msgstr "文件内容为空。"
+
+msgid "Edit or paste a complete dae file. Check configuration only parses the text; Save and apply writes /etc/honk/config.dae, restarts Honk, and rolls back if startup fails."
+msgstr "在这里编辑或粘贴完整的 dae 配置。「校验配置」只做语法检查；「保存并应用」会写入 /etc/honk/config.dae 并重启 Honk，启动失败自动回滚。"
+
+msgid "Configuration applied."
+msgstr "配置已应用。"
+
+msgid "Configuration was written, but Honk is not running: %s"
+msgstr "配置已写入，但 Honk 没有运行：%s"
+
+msgid "Could not apply the configuration."
+msgstr "无法应用配置。"
+
+msgid "The file opens Doona on port %s, but LuCI opens it on port %s, so the Doona button will not connect. Use 127.0.0.1:%s."
+msgstr "配置把 Doona 面板开在 %s 端口，而 LuCI 按 %s 端口打开，Doona 按钮会连不上。建议写成 127.0.0.1:%s。"
+
+msgid "These settings will most likely stop Honk on this router:"
+msgstr "下面几处设置很可能让 Honk 在本机起不来："
+
+msgid "Writing the configuration…"
+msgstr "正在写入配置…"
+
+msgid "lan_interface %s does not exist on this router (available: %s), so Honk would not see the LAN."
+msgstr "配置里的 lan_interface %s 在本机不存在（可用：%s），Honk 会抓不到局域网流量。"
+
+msgid "native_api.ui is embedded, but this firmware builds Honk without the native-ui feature, so the core exits on startup. Use /usr/share/doona instead."
+msgstr "配置里的 native_api.ui 是 embedded，但本固件编译的内核没有 native-ui 特性，内核会直接退出。请改成 /usr/share/doona。"
+
+msgid "unknown reason"
+msgstr "原因未知"
+
+msgid "Honk could not start with this configuration. The previous file was restored."
+msgstr "Honk 用这份配置起不来，已自动恢复上一版配置。"
+
+msgid "Startup failed and the automatic rollback did not finish. The snapshot was kept; run system recovery."
+msgstr "启动失败且自动回滚未完成，快照已保留，请到「维护」执行系统恢复。"
+
+msgid "The configuration changed during the operation. Nothing was applied."
+msgstr "操作期间配置被其他进程改动，本次没有写入。"
+
+msgid "Could not write the configuration. The snapshot was kept."
+msgstr "无法写入配置，快照已保留。"
+
+msgid "Could not confirm that Honk stopped. The operation was aborted and the snapshot was kept."
+msgstr "无法确认 Honk 已停止，操作已中止，快照已保留。"
+
+msgid "Manual mode is active. Restore managed mode before using the subscription tools."
+msgstr "当前是手动模式，请先恢复托管模式再使用订阅工具。"
+
+msgid "There is no saved managed configuration to restore."
+msgstr "没有可恢复的托管配置快照。"
+
+msgid "Could not read the list of network interfaces."
+msgstr "无法读取当前网络接口列表。"
+
+msgid "Manual mode: the file below owns nodes, groups, routing and DNS."
+msgstr "手动模式：下面的文件决定节点、分组、路由与 DNS。"
+
+msgid "%s imported and Honk is running."
+msgstr "%s 已导入，Honk 正在运行。"
+
+msgid "Upload a complete dae file (subscriptions, nodes and routing included) and Honk starts with it: the file is validated, written to /etc/honk/config.dae and the service is restarted. To hand-edit or paste instead, use the editor below."
+msgstr "上传一份完整的 dae 文件（含订阅、节点与分流规则），Honk 会直接用它启动：先校验，再写入 /etc/honk/config.dae，然后重启服务。想手工编辑或粘贴请用下面的编辑器。"
+
+msgid "Write this configuration to /etc/honk/config.dae and start Honk? The previous file is restored if startup fails."
+msgstr "将把这份配置写入 /etc/honk/config.dae 并启动 Honk。启动失败会自动恢复原文件，继续？"
+
+msgid "Could not read the configuration file."
+msgstr "无法读取配置文件。"
+
+msgid "Import a configuration"
+msgstr "导入配置"
+
+msgid "Import and start"
+msgstr "导入并启动"
+
+msgid "Manual mode: this tool is disabled until you restore managed mode (link at the top)."
+msgstr "手动模式下这个工具不可用，点页面顶部的「恢复托管模式」后再用。"
+
+msgid "Manual mode is active, so this tool cannot edit the configuration. Select Restore managed mode first."
+msgstr "当前是手动模式，这个工具不会改动配置。请先点「恢复托管模式」。"
+
+msgid "Could not switch back to managed mode. The previous configuration was restored."
+msgstr "切回托管模式失败，已恢复上一版配置。"
+
+msgid "Switching back to managed mode failed and the rollback did not finish. The snapshot was kept."
+msgstr "切回托管模式失败且回滚未完成，快照已保留，请到「维护」执行系统恢复。"
+
+msgid "The saved managed configuration is not a valid regular file."
+msgstr "保存的托管配置不是普通文件，无法恢复。"
+
+msgid "There is no saved draft to apply."
+msgstr "没有可应用的已保存草稿。"
+
+msgid "The saved draft is not a valid regular file."
+msgstr "保存的草稿不是普通文件。"
+
+msgid "Manual mode: these settings belong to config.dae, so they are read-only here. Restore managed mode on the Configuration page to change them."
+msgstr "手动模式：这些设置由 config.dae 决定，这里只读。要改的话先到「配置」页点「恢复托管模式」。"
+
+msgid "Manual mode is active, so these settings cannot be saved. Restore managed mode on the Configuration page first."
+msgstr "当前是手动模式，设置无法保存。请先到「配置」页恢复托管模式。"
+
+msgid "(adapted for this router: %s)"
+msgstr "（已按本机适配：%s）"
+
+msgid "(will adapt for this router: %s)"
+msgstr "（将按本机适配：%s）"
+
+msgid "Saving will adapt for this router: %s"
+msgstr "保存时会按本机适配：%s"
+
+msgid "This configuration needs fixes for this router:"
+msgstr "这份配置有几处需要按本机修正："
+
+msgid "Apply them in the editor now?"
+msgstr "现在就在编辑器里改掉吗？"
+
+msgid "Adapted in the editor: %s"
+msgstr "已在编辑器里适配：%s"
+
+msgid "Save cancelled."
+msgstr "已取消保存。"
+
+msgid "Loaded %s into the editor."
+msgstr "已把 %s 载入编辑器。"
+
+msgid "These lines will be changed for this router:"
+msgstr "这几行会按本机修改："
+
+msgid "Needs your attention:"
+msgstr "需要你处理："
+
+msgid "Choose the LAN interface"
+msgstr "选择 LAN 网卡"
+
+msgid "None of the active interfaces belongs to the configured LAN network. Pick the one Honk should see as LAN:"
+msgstr "当前活跃的网卡都不属于 LuCI 里配置的 LAN 网络。请挑一个 Honk 应该当作 LAN 的网卡："
+
+msgid "Use this interface"
+msgstr "就用这个网卡"
+
+msgid "lan_interface: cannot tell which interface is the LAN here (candidates: %s); set it yourself"
+msgstr "lan_interface：无法判断本机哪块网卡是 LAN（候选：%s），请自行确认"
+
+msgid "The editor changed while checking. Nothing was applied; check again."
+msgstr "检查期间编辑器内容被改动了，没有应用任何修改，请重新检查。"
+
+msgid "The editor changed while checking. Nothing was applied; import the file again."
+msgstr "检查期间编辑器内容被改动了，没有应用任何修改，请重新导入文件。"
+
+msgid "Import cancelled."
+msgstr "已取消导入。"
+
+msgid "Checking the subscription before saving…"
+msgstr "保存前先检查订阅…"
+
+msgid "Detected %s · %d node(s): %s"
+msgstr "识别为 %s · %d 个节点：%s"
+
+msgid "Detected %s."
+msgstr "识别为 %s。"
+
+msgid "unknown format"
+msgstr "未知格式"
+
+msgid "This core cannot use any of these nodes, so the subscription was not saved."
+msgstr "这份订阅里的节点本内核一个都用不了，所以没有保存。"
+
+msgid "Save the subscription anyway?"
+msgstr "仍然保存这份订阅吗？"
+
+msgid "unsupported"
+msgstr "不支持"
