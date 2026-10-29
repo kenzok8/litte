@@ -22,6 +22,7 @@ load_settings() {
 	config_get_bool enabled main enabled 0
 	config_get_bool boot_enabled main boot_enabled 0
 	config_get_bool initialized main initialized 0
+	config_get config_mode main config_mode managed
 	config_get config_file main config_file /etc/honk/config.dae
 	config_get listen_port main listen_port 9527
 	config_get_bool clash_api_enabled main clash_api_enabled 0
@@ -66,6 +67,18 @@ system_config_readonly() {
 }
 
 no_honk_resources() {
+	# honk-core removes dae0/dae0peer and the daens netns when it exits cleanly. A
+	# crash or SIGKILL leaves them behind, and preflight then refuses every later
+	# start, so the service can never come back without hand surgery. Reclaim them
+	# here, but only when no core is running to own them.
+	if ! pidof honk-core >/dev/null 2>&1; then
+		for stale_link in dae0 dae0peer; do
+			ip link show "$stale_link" >/dev/null 2>&1 && ip link del "$stale_link" >/dev/null 2>&1
+		done
+		if ip netns list 2>/dev/null | awk '{print $1}' | grep -qx daens; then
+			ip netns del daens >/dev/null 2>&1
+		fi
+	fi
 	for link in dae0 dae0peer; do
 		ip link show "$link" >/dev/null 2>&1 && { fail "$link already exists"; return 1; }
 	done
@@ -95,6 +108,14 @@ check_network() {
 check_config() {
 	[ "$config_file" = /etc/honk/config.dae ] || { fail "config_file must be /etc/honk/config.dae"; return 1; }
 	[ -f /etc/honk/config.dae ] && [ ! -L /etc/honk/config.dae ] || { fail "main config must be a regular file"; return 1; }
+	case "$config_mode" in
+		manual)
+			"$HONK_CORE" config validate --config /etc/honk/config.dae >/dev/null || { fail "manual dae configuration failed static validation"; return 1; }
+			return 0
+			;;
+		managed) ;;
+		*) fail "invalid config_mode"; return 1 ;;
+	esac
 	[ -f /etc/honk/system.dae ] && [ ! -L /etc/honk/system.dae ] || { fail "system config must be a regular file"; return 1; }
 	system_config_readonly || { fail "system config must be private (0600)"; return 1; }
 	[ -r /usr/share/doona/index.html ] || { fail "Doona UI index.html unavailable"; return 1; }
@@ -193,8 +214,12 @@ maintenance_start_guard() {
 		return 1
 	fi
 	if lock_owner_invalid || honk_lock_is_stale; then
-		fail "maintenance_recovery_required: stale operation lock"
-		return 1
+		# The recorded owner is gone, so nothing is in flight. Reclaim the lock
+		# instead of refusing every later start: a caller that timed out cannot
+		# release it, and leaving it wedges the service until someone SSHes in.
+		# A live lock still blocks below through honk_lock_acquire.
+		logger -t honk "reclaiming stale operation lock" 2>/dev/null || :
+		rm -rf "$HONK_LOCK_DIR"
 	fi
 }
 
@@ -210,6 +235,10 @@ lock_owner_invalid() {
 preflight() {
 	load_settings
 	[ "$enabled" = 1 ] && [ "$initialized" = 1 ] || { fail "package must be explicitly enabled and initialized"; return 1; }
+	if [ "$config_mode" = manual ]; then
+		maintenance_start_guard && check_config && check_kernel && no_honk_resources && check_conflicts
+		return $?
+	fi
 	maintenance_start_guard && check_config && check_network && check_kernel && no_honk_resources && check_conflicts && check_port && {
 		[ "$clash_api_enabled" = 0 ] || check_port "$clash_api_port"
 	}
@@ -383,6 +412,8 @@ settings_rollback() {
 
 settings() {
 	if [ -e /etc/.honk-update/journal ] || [ -L /etc/.honk-update/journal ]; then echo '{"ok":false,"message":"update_recovery_required"}'; return 1; fi
+	load_settings
+	[ "$config_mode" = manual ] && { echo '{"ok":false,"message":"settings_unavailable_in_manual_mode"}'; return 1; }
 	. /usr/share/libubox/jshn.sh || { echo '{"ok":false,"message":"jshn_unavailable"}'; return 1; }
 	# Bound stdin to 64KiB (DoS protection); read one extra byte to detect truncation.
 	settings_json=$(head -c 65537)
@@ -524,16 +555,23 @@ diagnose() {
 	errors=""
 	managed_core_pid >/dev/null 2>&1 && running=1 || running=0
 	check_config >/dev/null 2>&1 || errors="$errors invalid_package_config"
-	check_network >/dev/null 2>&1 || errors="$errors lan_network_unavailable"
-	network_settings >/dev/null 2>&1 || errors="$errors lan_ipv4_unavailable"
 	check_kernel >/dev/null 2>&1 || errors="$errors kernel_requirements_unmet"
-	command -v curl >/dev/null 2>&1 || errors="$errors curl_missing"
-	if [ "$running" != 1 ]; then
-		no_honk_resources >/dev/null 2>&1 || errors="$errors honk_resources_occupied"
-		pidof honk-core >/dev/null 2>&1 && errors="$errors unmanaged_core_running"
-		check_port >/dev/null 2>&1 || errors="$errors listen_port_occupied"
-		if [ "$clash_api_enabled" = 1 ]; then
-			check_port "$clash_api_port" >/dev/null 2>&1 || errors="$errors clash_api_port_occupied"
+	if [ "$config_mode" = manual ]; then
+		if [ "$running" != 1 ]; then
+			no_honk_resources >/dev/null 2>&1 || errors="$errors honk_resources_occupied"
+			pidof honk-core >/dev/null 2>&1 && errors="$errors unmanaged_core_running"
+		fi
+	else
+		check_network >/dev/null 2>&1 || errors="$errors lan_network_unavailable"
+		network_settings >/dev/null 2>&1 || errors="$errors lan_ipv4_unavailable"
+		command -v curl >/dev/null 2>&1 || errors="$errors curl_missing"
+		if [ "$running" != 1 ]; then
+			no_honk_resources >/dev/null 2>&1 || errors="$errors honk_resources_occupied"
+			pidof honk-core >/dev/null 2>&1 && errors="$errors unmanaged_core_running"
+			check_port >/dev/null 2>&1 || errors="$errors listen_port_occupied"
+			if [ "$clash_api_enabled" = 1 ]; then
+				check_port "$clash_api_port" >/dev/null 2>&1 || errors="$errors clash_api_port_occupied"
+			fi
 		fi
 	fi
 	check_conflicts >/dev/null 2>&1 || errors="$errors proxy_conflict"
@@ -577,6 +615,11 @@ clash_system_matches() {
 repair() {
 	if [ -e /etc/.honk-update/journal ] || [ -L /etc/.honk-update/journal ]; then echo '{"ok":false,"message":"update_recovery_required"}'; return 1; fi
 	load_settings
+	if [ "$config_mode" = manual ]; then
+		check_config && { echo '{"ok":true,"message":"manual_config_valid"}'; return 0; }
+		echo '{"ok":false,"message":"manual_config_invalid"}'
+		return 1
+	fi
 	old_network=$lan_network
 	old_port=$listen_port
 	old_enabled=$enabled
