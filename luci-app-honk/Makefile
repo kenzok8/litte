@@ -6,7 +6,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-honk
 PKG_VERSION:=2026.10.30
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
 
 PKG_SOURCE:=doona-4493e8c3-cc20a8667745.tar.gz
@@ -29,7 +29,7 @@ define Package/luci-app-honk
   CATEGORY:=LuCI
   SUBMENU:=3. Applications
   TITLE:=LuCI support for Honk
-  DEPENDS:=+honk +rpcd +luci-base +cgi-io +jsonfilter +libubox
+  DEPENDS:=+honk +rpcd +luci-base +cgi-io +jsonfilter
   PKGARCH:=all
   URL:=https://github.com/kenzok8/openwrt-honk
   MAINTAINER:=kenzok8
