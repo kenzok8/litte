@@ -46,4 +46,3 @@ define Package/redsocks2/install
 endef
 
 $(eval $(call BuildPackage,redsocks2))
-
