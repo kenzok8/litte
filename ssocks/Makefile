@@ -19,7 +19,6 @@ PKG_SOURCE_URL:=https://codeload.github.com/kenzok8/ssocks/tar.gz/$(PKG_VERSION)
 PKG_HASH:=2249f7b51a3e99b269d4bf5f65124707ea250cc633906ac06384af49b5582057
 
 PKG_LICENSE:=MIT
-PKG_LICENSE_FILES:=LICENSE
 PKG_MAINTAINER:=Tianling Shen <cnsztl@immortalwrt.org>
 
 PKG_BUILD_PARALLEL:=1
